@@ -16,6 +16,8 @@
       
       <tag>kernel pwn</tag>
       
+      <tag>userfaultfd</tag>
+      
     </tags>
     
   </entry>
