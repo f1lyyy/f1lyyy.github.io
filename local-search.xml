@@ -4,29 +4,6 @@
   
   
   <entry>
-    <title>Mac_M4 编译 v8</title>
-    <link href="/2025/05/16/Mac_complie_v8_engine/"/>
-    <url>/2025/05/16/Mac_complie_v8_engine/</url>
-    
-    <content type="html"><![CDATA[<h1 id="Mac-下编译-v8"><a href="#Mac-下编译-v8" class="headerlink" title="Mac 下编译 v8"></a>Mac 下编译 v8</h1><blockquote><p>记录下Mac下编译v8的过程，如何拉去v8源码就不再说明了</p></blockquote><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> v8<br>gn gen out/gn --ide=<span class="hljs-string">&quot;xcode&quot;</span><br>open ./out/gn/all.xcodeproj<br></code></pre></td></tr></table></figure><p>接着进入Xcode的界面 Product→Scheme→d8，接着等待检索目录结束</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_PX-QpUFFsx.png"></p><p>接着Product→Build，或者command B，接着就会开始编译</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_2rvAdqtv_G.png"></p><p>编译完毕之后，会出现一下界面</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_pAEDh7Acsy.png"></p><p>先不着急运行，设置下启动参数</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_9z-rqupRs6.png"></p><p>我一般设置为下图，然后效果就相当于.&#x2F;d8–allow-natives-syntax exp.js</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_GZAYlVu5Kk.png"></p><p>记得设置下lldb的init脚本路径，里面设置内容设置下<code>command script import /Users/flyyy/Desktop/workspace/browser/v8/demo/v8/tools/lldb_commands.py</code> ，设置成自己的lldb_commands.py的路径，就可以正常使用job这种指令了</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_scjhoMqt5k.png"></p><p>最后点击run，就是这个效果</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_6iZdn7SYmy.png"></p>]]></content>
-    
-    
-    
-    <tags>
-      
-      <tag>v8</tag>
-      
-      <tag>Mac</tag>
-      
-      <tag>complie</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>GoogleCTF2023-v8box</title>
     <link href="/2025/05/16/GoogleCTF2023-v8box/"/>
     <url>/2025/05/16/GoogleCTF2023-v8box/</url>
@@ -48,6 +25,29 @@
       <tag>v8</tag>
       
       <tag>sandbox，bytecode</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Mac_M4 编译 v8</title>
+    <link href="/2025/05/16/Mac_complie_v8_engine/"/>
+    <url>/2025/05/16/Mac_complie_v8_engine/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Mac-下编译-v8"><a href="#Mac-下编译-v8" class="headerlink" title="Mac 下编译 v8"></a>Mac 下编译 v8</h1><blockquote><p>记录下Mac下编译v8的过程，如何拉去v8源码就不再说明了</p></blockquote><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> v8<br>gn gen out/gn --ide=<span class="hljs-string">&quot;xcode&quot;</span><br>open ./out/gn/all.xcodeproj<br></code></pre></td></tr></table></figure><p>接着进入Xcode的界面 Product→Scheme→d8，接着等待检索目录结束</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_PX-QpUFFsx.png"></p><p>接着Product→Build，或者command B，接着就会开始编译</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_2rvAdqtv_G.png"></p><p>编译完毕之后，会出现一下界面</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_pAEDh7Acsy.png"></p><p>先不着急运行，设置下启动参数</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_9z-rqupRs6.png"></p><p>我一般设置为下图，然后效果就相当于.&#x2F;d8–allow-natives-syntax exp.js</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_GZAYlVu5Kk.png"></p><p>记得设置下lldb的init脚本路径，里面设置内容设置下<code>command script import /Users/flyyy/Desktop/workspace/browser/v8/demo/v8/tools/lldb_commands.py</code> ，设置成自己的lldb_commands.py的路径，就可以正常使用job这种指令了</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_scjhoMqt5k.png"></p><p>最后点击run，就是这个效果</p><p><img src="https://cdn.jsdelivr.net/gh/doo0m/blog_photo@main/Mac_complie_v8_engine/image_6iZdn7SYmy.png"></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>v8</tag>
+      
+      <tag>Mac</tag>
+      
+      <tag>complie</tag>
       
     </tags>
     
