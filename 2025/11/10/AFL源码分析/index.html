@@ -1,0 +1,2220 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/%E5%AF%BC%E8%88%AA%E9%A1%B5%E9%9D%A2/wifi.png">
+  <link rel="icon" href="/img/%E5%AF%BC%E8%88%AA%E9%A1%B5%E9%9D%A2/wifi.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="flyyy">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="模糊测试入门">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AFL源码分析">
+<meta property="og:url" content="http://example.com/2025/11/10/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="模糊测试入门">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.png">
+<meta property="article:published_time" content="2025-11-10T06:57:55.000Z">
+<meta property="article:modified_time" content="2025-11-10T07:01:58.941Z">
+<meta property="article:author" content="flyyy">
+<meta property="article:tag" content="AFL">
+<meta property="article:tag" content="Fuzz">
+<meta property="article:tag" content="llvm">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>AFL源码分析 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":"zh-CN","copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>flyyy&#39;s blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/categories/v8/" target="_self">
+                    
+                    <span>v8</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/categories/kernel/" target="_self">
+                    
+                    <span>kernel</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/categories/match/" target="_self">
+                    
+                    <span>match</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL源码分析/image_Znx0c-nMay.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="AFL源码分析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        flyyy
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-11-10 14:57" pubdate>
+          2025年11月10日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          13k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          111 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">AFL源码分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="AFL源码分析"><a href="#AFL源码分析" class="headerlink" title="AFL源码分析"></a>AFL源码分析</h1><h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF">基本信息</a></li>
+<li><a href="#Makefile">Makefile</a></li>
+<li><a href="#afl-gccc">afl-gcc.c</a><ul>
+<li><a href="#find_asu8-argv0">find_as(u8* argv0)</a></li>
+<li><a href="#edit_paramsu32-argc-char-argv">edit_params(u32 argc, char** argv)</a></li>
+</ul>
+</li>
+<li><a href="#afl-asc">afl-as.c</a><ul>
+<li><a href="#mainint-argc-char-argv">main(int argc, char** argv)</a></li>
+<li><a href="#edit_paramsint-argc-char-argv">edit_params(int argc, char** argv)</a></li>
+<li><a href="#add_instrumentationvoid">add_instrumentation(void)</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E7%9A%84%E8%B0%83%E8%AF%95">简单的调试</a></li>
+</ul>
+</li>
+<li><a href="#afl-clang-fastc">afl-clang-fast.c</a><ul>
+<li><a href="#find_obju8-argv0">find_obj(u8* argv0)</a></li>
+<li><a href="#edit_paramsu32-argc-char-argv">edit_params(u32 argc, char** argv)</a></li>
+<li><a href="#mainint-argc-char-argv">main(int argc, char** argv)</a></li>
+<li><a href="#afl-llvm-passsocc">afl-llvm-pass.so.cc</a></li>
+<li><a href="#afl-llvm-rtoc">afl-llvm-rt.o.c</a></li>
+</ul>
+</li>
+<li><a href="#afl-fuzzc">afl-fuzz.c</a><ul>
+<li><a href="#%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90">参数解析</a></li>
+<li><a href="#setup_signal_handlersvoid">setup_signal_handlers(void)</a></li>
+<li><a href="#check_asan_optsvoid">check_asan_opts(void)</a></li>
+<li><a href="#fix_up_syncvoid">fix_up_sync(void)</a></li>
+<li><a href="#save_cmdlineu32-argc-char-argv">save_cmdline(u32 argc, char** argv)</a></li>
+<li><a href="#fix_up_banneru8-name">fix_up_banner(u8* name)</a></li>
+<li><a href="#check_if_ttyvoid">check_if_tty(void)</a></li>
+<li><a href="#get_core_countvoid">get_core_count(void)</a></li>
+<li><a href="#bind_to_free_cpuvoid">bind_to_free_cpu(void)</a></li>
+<li><a href="#check_crash_handlingvoid">check_crash_handling(void)</a></li>
+<li><a href="#check_cpu_governorvoid">check_cpu_governor(void)</a></li>
+<li><a href="#setup_postvoid">setup_post(void)</a></li>
+<li><a href="#setup_shmvoid">setup_shm(void)</a></li>
+<li><a href="#init_count_class16void">init_count_class16(void)</a></li>
+<li><a href="#setup_dirs_fdsvoid-">setup_dirs_fds(void) </a></li>
+<li><a href="#read_testcasesvoid">read_testcases(void)</a></li>
+<li><a href="#add_to_queueu8-fname-u32-len-u8-passed_det">add_to_queue(u8* fname, u32 len, u8 passed_det)</a></li>
+<li><a href="#shuffle_ptrsvoid-ptrs-u32-cnt">shuffle_ptrs(void** ptrs, u32 cnt)</a></li>
+<li><a href="#load_autovoid">load_auto(void)</a></li>
+<li><a href="#maybe_add_autou8-mem-u32-len">maybe_add_auto(u8* mem, u32 len)</a></li>
+<li><a href="#pivot_inputsvoid">pivot_inputs(void)</a></li>
+<li><a href="#load_extrasu8-dir">load_extras(u8* dir)</a></li>
+<li><a href="#find_timeoutvoid">find_timeout(void)</a></li>
+<li><a href="#detect_file_argschar-argv">detect_file_args(char** argv)</a></li>
+<li><a href="#setup_stdio_filevoid">setup_stdio_file(void)</a></li>
+<li><a href="#check_binaryu8-fname">check_binary(u8* fname)</a></li>
+<li><a href="#perform_dry_runchar-argv">perform_dry_run(char** argv)</a></li>
+<li><a href="#calibrate_casechar-argv-struct-queue_entry-q-u8-use_memu32-handicap-u8-from_queue">calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,u32 handicap, u8 from_queue)</a></li>
+<li><a href="#init_forkserverchar-argv">init_forkserver(char** argv)</a></li>
+<li><a href="#show_statsvoid">show_stats(void)</a></li>
+<li><a href="#has_new_bitsu8-virgin_map">has_new_bits(u8* virgin_map)</a></li>
+<li><a href="#write_to_testcasevoid-mem-u32-len">write_to_testcase(void* mem, u32 len)</a></li>
+<li><a href="#run_targetchar-argv-u32-timeout">run_target(char** argv, u32 timeout)</a></li>
+<li><a href="#classify_countsu64-mem">classify_counts(u64* mem)</a></li>
+<li><a href="#count_bytesu8-mem">count_bytes(u8* mem)</a></li>
+<li><a href="#update_bitmap_scorestruct-queue_entry-q">update_bitmap_score(struct queue_entry* q)</a></li>
+<li><a href="#minimize_bitsu8-dst-u8-src">minimize_bits(u8* dst, u8* src)</a></li>
+<li><a href="#mark_as_variablestruct-queue_entry-q">mark_as_variable(struct queue_entry* q)</a></li>
+<li><a href="#cull_queuevoid">cull_queue(void)</a></li>
+<li><a href="#mark_as_redundantstruct-queue_entry-q-u8-state">mark_as_redundant(struct queue_entry* q, u8 state)</a></li>
+<li><a href="#show_init_stats">show_init_stats</a></li>
+<li><a href="#find_start_positionvoid">find_start_position(void)</a></li>
+<li><a href="#write_stats_filedouble-bitmap_cvg-double-stability-double-eps">write_stats_file(double bitmap_cvg, double stability, double eps)</a></li>
+<li><a href="#save_autovoid">save_auto(void)</a></li>
+<li><a href="#fuzz%E6%89%A7%E8%A1%8C%E7%9A%84%E6%B5%81%E7%A8%8B">fuzz执行的流程</a></li>
+<li><a href="#sync_fuzzerschar-argv">sync_fuzzers(char** argv)</a></li>
+<li><a href="#%E6%9A%82%E6%97%B6%E6%90%81%E7%BD%AE%E5%88%86%E6%9E%90%E7%9A%84%E5%87%BD%E6%95%B0">暂时搁置分析的函数</a><ul>
+<li><a href="#fuzz_onechar-argv">fuzz_one(char** argv)</a></li>
+<li><a href="#%E6%A0%B7%E6%9C%AC%E7%9A%84%E7%A1%AE%E5%AE%9A%E6%80%A7%E5%8F%98%E5%BC%82%E9%9A%8F%E6%9C%BA%E6%80%A7%E5%8F%98%E5%BC%82%E5%AD%97%E7%AC%A6%E6%8B%BC%E6%8E%A5">样本的确定性变异&#x2F;随机性变异&#x2F;字符拼接</a></li>
+<li><a href="#trim_casechar-argv-struct-queue_entry-q-u8-in_buf">trim_case(char** argv, struct queue_entry* q, u8* in_buf)</a></li>
+<li><a href="#calculate_scorestruct-queue_entry-q">calculate_score(struct queue_entry* q)</a></li>
+<li><a href="#common_fuzz_stuffchar-argv-u8-out_buf-u32-len">common_fuzz_stuff(char** argv, u8* out_buf, u32 len)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#fuzzer%E4%B8%8Eforkserver%E9%97%B4%E7%9A%84%E9%80%9A%E4%BF%A1">fuzzer与forkserver间的通信</a><ul>
+<li><a href="#%E4%B8%80%E4%BA%9B%E9%87%8D%E8%A6%81%E7%9A%84%E5%80%BC">一些重要的值</a></li>
+<li><a href="#_afl_maybe_logunsigned-int-cur_loc">_afl_maybe_log(unsigned int cur_loc)</a></li>
+<li><a href="#complie_time_random%E7%9A%84%E7%94%B1%E6%9D%A5">complie_time_random的由来</a></li>
+</ul>
+</li>
+<li><a href="#ref">ref</a></li>
+</ul>
+<p>[TOC]</p>
+<h1 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h1><p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/google/AFL" title="https://github.com/google/AFL">https://github.com/google/AFL</a></p>
+<h1 id="Makefile"><a href="#Makefile" class="headerlink" title="Makefile"></a>Makefile</h1><p>这里是对应的项目名称、afl的版本、最终make install目录的前缀、bin目录、helper目录、doc目录和杂项的目录</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs makefile">PROGNAME    = afl<br>VERSION     = <span class="hljs-variable">$(<span class="hljs-built_in">shell</span> grep &#x27;^\#define VERSION &#x27; config.h | cut -d &#x27;&quot;&#x27; -f2)</span><br><br>PREFIX     ?= /usr/local<br>BIN_PATH    = <span class="hljs-variable">$(PREFIX)</span>/bin<br>HELPER_PATH = <span class="hljs-variable">$(PREFIX)</span>/lib/afl<br>DOC_PATH    = <span class="hljs-variable">$(PREFIX)</span>/share/doc/afl<br>MISC_PATH   = <span class="hljs-variable">$(PREFIX)</span>/share/afl<br></code></pre></td></tr></table></figure>
+
+
+<p>PROGS是会编译的文件名</p>
+<p>SH_PROGS：sh脚本</p>
+<p>CFLAGS：编译的flag，其中?&#x3D;意思是如果没有指定编译flag的话，就使用这个；后面的DAFL_PATH、DDOC_PATH和DBIN_PATH是编译预处理阶段定义一个宏 ，后续代码中涉及到access都会与这个有关</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs makefile">PROGS       = afl-gcc afl-fuzz afl-showmap afl-tmin afl-gotcpu afl-analyze<br>SH_PROGS    = afl-plot afl-cmin afl-whatsup<br><br>CFLAGS     ?= -O3 -funroll-loops<br>CFLAGS     += -Wall -D_FORTIFY_SOURCE=2 -g -Wno-pointer-sign \<br>        -DAFL_PATH=\<span class="hljs-string">&quot;<span class="hljs-variable">$(HELPER_PATH)\&quot;</span> -DDOC_PATH=\&quot;<span class="hljs-variable">$(DOC_PATH)\&quot;</span> \</span><br><span class="hljs-string">        -DBIN_PATH=\&quot;<span class="hljs-variable">$(BIN_PATH)\&quot;</span></span><br></code></pre></td></tr></table></figure>
+
+
+<p>如果是linux系统，那么LDFLAGS就会有-ldl</p>
+<p>接着判断，如果$CC输出了clang那么CC 会被设置成afl-clang，反之就是afl-gcc</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-keyword">ifneq</span> <span class="hljs-string">&quot;$(filter Linux GNU%,$(shell uname))&quot;</span> <span class="hljs-string">&quot;&quot;</span><br>  LDFLAGS  += -ldl<br><span class="hljs-keyword">endif</span><br><br><span class="hljs-keyword">ifeq</span> <span class="hljs-string">&quot;$(findstring clang, $(shell <span class="hljs-variable">$(CC)</span> --version 2&gt;/dev/null))&quot;</span> <span class="hljs-string">&quot;&quot;</span><br>  TEST_CC   = afl-gcc<br><span class="hljs-keyword">else</span><br>  TEST_CC   = afl-clang<br><span class="hljs-keyword">endif</span><br></code></pre></td></tr></table></figure>
+
+
+<p>这里就是一些公共的头文件</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">COMM_HDR    = alloc-inl.h config.h debug.h types.h<br></code></pre></td></tr></table></figure>
+
+
+<p>make all的指令，依赖项在后面，执行顺序是从左到右</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">all: test_x86 <span class="hljs-variable">$(PROGS)</span> afl-as test_build all_done</span><br></code></pre></td></tr></table></figure>
+
+
+<p>test_x86用于判断当前平台是否可以生成x86的代码，即用于平台判断</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-keyword">ifndef</span> AFL_NO_X86<br><br><span class="hljs-section">test_x86:</span><br>  @echo <span class="hljs-string">&quot;[*] Checking for the ability to compile x86 code...&quot;</span><br>  @echo &#x27;main() &#123; __asm__(<span class="hljs-string">&quot;xorb %al, %al&quot;</span>); &#125;&#x27; | <span class="hljs-variable">$(CC)</span> -w -x c - -o .test || ( echo; echo <span class="hljs-string">&quot;Oops, looks like your compiler can&#x27;t generate x86 code.&quot;</span>; echo; echo <span class="hljs-string">&quot;Don&#x27;t panic! You can use the LLVM or QEMU mode, but see docs/INSTALL first.&quot;</span>; echo <span class="hljs-string">&quot;(To ignore this error, set AFL_NO_X86=1 and try again.)&quot;</span>; echo; exit 1 )<br>  @rm -f .test<br>  @echo <span class="hljs-string">&quot;[+] Everything seems to be working, ready to compile.&quot;</span><br><br><span class="hljs-keyword">else</span><br><br><span class="hljs-section">test_x86:</span><br>  @echo <span class="hljs-string">&quot;[!] Note: skipping x86 compilation checks (AFL_NO_X86 set).&quot;</span><br><br><span class="hljs-keyword">endif</span><br></code></pre></td></tr></table></figure>
+
+
+<p>afl-gcc：编译出afl-gcc，使用上方说到的编译flag；其中$@是自动变量，值为afl-gcc；编译完毕之后afl-g++、afl-clang、afl-clang++都软链接到afl-gcc，一种优化代码的方式，减少维护成本</p>
+<p>afl-as：编译出afl-as；软链接as到afl-as</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">afl-gcc: afl-gcc.c <span class="hljs-variable">$(COMM_HDR)</span> | test_x86</span><br>  <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> <span class="hljs-variable">$@</span>.c -o <span class="hljs-variable">$@</span> <span class="hljs-variable">$(LDFLAGS)</span><br>  set -e; for i in afl-g++ afl-clang afl-clang++; do ln -sf afl-gcc $$i; done<br><br><span class="hljs-section">afl-as: afl-as.c afl-as.h <span class="hljs-variable">$(COMM_HDR)</span> | test_x86</span><br>  <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> <span class="hljs-variable">$@</span>.c -o <span class="hljs-variable">$@</span> <span class="hljs-variable">$(LDFLAGS)</span><br>  ln -sf afl-as as<br><br></code></pre></td></tr></table></figure>
+
+
+<p>下面的都是编译出对应的文件，但是就没有软链接这个步骤了</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">afl-fuzz: afl-fuzz.c <span class="hljs-variable">$(COMM_HDR)</span> | test_x86</span><br>  <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> <span class="hljs-variable">$@</span>.c -o <span class="hljs-variable">$@</span> <span class="hljs-variable">$(LDFLAGS)</span><br><br><span class="hljs-section">afl-showmap: afl-showmap.c <span class="hljs-variable">$(COMM_HDR)</span> | test_x86</span><br>  <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> <span class="hljs-variable">$@</span>.c -o <span class="hljs-variable">$@</span> <span class="hljs-variable">$(LDFLAGS)</span><br><br><span class="hljs-section">afl-tmin: afl-tmin.c <span class="hljs-variable">$(COMM_HDR)</span> | test_x86</span><br>  <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> <span class="hljs-variable">$@</span>.c -o <span class="hljs-variable">$@</span> <span class="hljs-variable">$(LDFLAGS)</span><br><br><span class="hljs-section">afl-analyze: afl-analyze.c <span class="hljs-variable">$(COMM_HDR)</span> | test_x86</span><br>  <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> <span class="hljs-variable">$@</span>.c -o <span class="hljs-variable">$@</span> <span class="hljs-variable">$(LDFLAGS)</span><br><br><span class="hljs-section">afl-gotcpu: afl-gotcpu.c <span class="hljs-variable">$(COMM_HDR)</span> | test_x86</span><br>  <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> <span class="hljs-variable">$@</span>.c -o <span class="hljs-variable">$@</span> <span class="hljs-variable">$(LDFLAGS)</span><br></code></pre></td></tr></table></figure>
+
+
+<p>分析完毕上方的makefile，其实大致可以知道哪一些是需要重点分析的，然后makefile里剩下的不是特别重要，就不再分析了。</p>
+<h1 id="afl-gcc-c"><a href="#afl-gcc-c" class="headerlink" title="afl-gcc.c"></a>afl-gcc.c</h1><p>核心函数只有find_as(argv[0])和edit_params(argc, argv)，当参数决定之后会调用最后执行execvp(cc_params[0], (char **)cc_params);</p>
+<p>添加这一段逻辑之后，执行make，看到以下的输出，其实就和之前分析makefile对上了，只不过这里是testbuild，我们没有去分析，但是这些编译flag都是熟悉的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; argc; i++) &#123;<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s\n&quot;</span>, argv[i]);<br>&#125;<br>getchar();<br>find_as(argv[<span class="hljs-number">0</span>]);<br></code></pre></td></tr></table></figure>
+
+
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_ox7WehRNWX.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="find-as-u8-argv0"><a href="#find-as-u8-argv0" class="headerlink" title="find_as(u8* argv0)"></a>find_as(u8* argv0)</h2><p>这个函数的作用是获得正确的as_path路径</p>
+<ul>
+<li>先从环境变量AFL_PATH中获取afl_path，如果存在，并且&#x2F;AFL_PATH&#x2F;as存在且可执行，那么就会给as_path赋值为&#x2F;AFL_PATH&#x2F;as并退出</li>
+<li>如果AFL_PATH不存在，那么就会去获取argv[0]这个参数路径下最后一个”&#x2F;“后的afl-gcc（例如这个路径&#x2F;home&#x2F;flyyy&#x2F;Desktop&#x2F;workspace&#x2F;fuzz&#x2F;AFL&#x2F;afl-gcc，那么获取的就是&#x2F;afl-gcc），将这个值赋值给slash</li>
+<li>如果slash存在，那么会获取afl-gcc前面的path（以前面的为例，就是&#x2F;home&#x2F;flyyy&#x2F;Desktop&#x2F;workspace&#x2F;fuzz&#x2F;AFL），赋值给dir，接着会去判断这个dir目录下是否存在afl-as，如果存在且可以执行，那么就会给as_path赋值为dir&#x2F;afl-as并退出</li>
+<li>如果slash不存在，那么会使用默认的AFL_PATH，AFL_PATH一般等于&#x2F;usr&#x2F;local&#x2F;lib&#x2F;afl，接着会判断这个目录下的as是否存在且可执行，可以则给as_path赋值为&#x2F;usr&#x2F;local&#x2F;lib&#x2F;afl&#x2F;as，然后退出。反之则输出报错信息，并让用户重新设置AFL_PATH</li>
+</ul>
+<h2 id="edit-params-u32-argc-char-argv"><a href="#edit-params-u32-argc-char-argv" class="headerlink" title="edit_params(u32 argc, char** argv)"></a>edit_params(u32 argc, char** argv)</h2><p>整体就是通过命令行参数来完善cc_params</p>
+<ul>
+<li>如果是FreeBSD和x86_64，那么初始化m32_set &#x3D; 0</li>
+<li>获取argv[0]的最后一个&#x2F;之后的值（包括&#x2F;）赋值给name<ul>
+<li>如果name[0]为空的话则name &#x3D; argv[0]，反之name++，也就是不要&#x2F;了</li>
+</ul>
+</li>
+<li>如果name是afl-clang<ul>
+<li>初始化clang_mode &#x3D; 1;设置CLANG_ENV_VAR为1</li>
+<li>如果name是afl-clang++，并且设置了AFL_CXX，那么cc_params[0]&#x3D;AFL_CXX；反之为clang++</li>
+<li>如果name不是afl-clang++，并且设置了AFL_CC，那么cc_params[0]&#x3D;AFL_CC；反之为clang</li>
+</ul>
+</li>
+<li>如果name不是afl-clang<ul>
+<li>为APPLE平台时<ul>
+<li>name为afl-g++，则cc_params[0] &#x3D; getenv(“AFL_CXX”);</li>
+<li>name为”afl-gcj，则cc_params[0] &#x3D; getenv(“AFL_GCJ”);</li>
+<li>否则cc_params[0] &#x3D; getenv(“AFL_CC”);</li>
+<li>如果cc_params[0]为空则报错</li>
+</ul>
+</li>
+<li>如果不是APPLE平台<ul>
+<li>如果name是afl-g++，并且设置了AFL_CXX，那么cc_params[0]&#x3D;AFL_CXX；反之则为g++</li>
+<li>如果name是afl-gcj，并且设置了AFL_GCJ，那么cc_params[0]&#x3D;AFL_GCJ；反之则为gcj</li>
+<li>否则获取AFL_CC，如果不为空cc_params[0] &#x3D; AFL_CC；反之则为gcc</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>下面进入一个大循环</p>
+<ul>
+<li>依次argc—，并且u8* cur &#x3D; *(++argv);</li>
+<li>如果参数cur为”-B”，且”-B”紧邻的下一个字节为空，且还存在参数，则continue</li>
+<li>如果参数cur为”-integrated-as”，则continue</li>
+<li>如果参数cur为”-pipe”，则continue</li>
+<li>如果为<strong>FreeBSD</strong>和<strong>x86_64</strong>，且参数cur为”-m32”，则m32_set &#x3D; 1</li>
+<li>如果参数cur为”-fsanitize&#x3D;address”或者”-fsanitize&#x3D;memory”，则asan_set &#x3D; 1;</li>
+<li>如果参数cur为”FORTIFY_SOURCE”，则fortify_set &#x3D; 1;</li>
+<li>以上判断都完毕之后，执行cc_params[cc_par_cnt++] &#x3D; cur;</li>
+</ul>
+<p>经过上方的while循环的判断</p>
+<ul>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-B”;cc_params[cc_par_cnt++] &#x3D; as_path;</li>
+<li>如果为clang mode的话<ul>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-no-integrated-as”;</li>
+</ul>
+</li>
+<li>如果设置了环境变量AFL_HARDEN，那么cc_params[cc_par_cnt++] &#x3D; “-fstack-protector-all”;<ul>
+<li>如果fortify_set≠1，那么cc_params[cc_par_cnt++] &#x3D; “-D_FORTIFY_SOURCE&#x3D;2”;</li>
+</ul>
+</li>
+<li>如果设置asan_set<ul>
+<li>那么设置AFL_USE_ASAN为1</li>
+</ul>
+</li>
+<li>如果没设置asan_set，但设置了AFL_USE_ASAN<ul>
+<li>如果设置了AFL_USE_MSAN，则报错</li>
+<li>如果设置了AFL_HARDEN，则报错</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-U_FORTIFY_SOURCE”;cc_params[cc_par_cnt++] &#x3D; “-fsanitize&#x3D;address”;</li>
+</ul>
+</li>
+<li>如果没设置asan_set，当设置了AFL_USE_MSAN<ul>
+<li>如果设置了AFL_USE_ASAN，则报错</li>
+<li>如果设置了AFL_HARDEN，则报错</li>
+</ul>
+</li>
+<li>如果没有设置AFL_DONT_OPTIMIZE<ul>
+<li>如果满足<strong>FreeBSD</strong> &amp;&amp; <strong>x86_64</strong><ul>
+<li>满足(!clang_mode || !m32_set)&#x3D;&#x3D;1，则cc_params[cc_par_cnt++] &#x3D; “-g”;</li>
+</ul>
+</li>
+<li>如果不满足<strong>FreeBSD</strong> &amp;&amp; <strong>x86_64</strong><ul>
+<li>则cc_params[cc_par_cnt++] &#x3D; “-g”;</li>
+</ul>
+</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-O3”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-funroll-loops”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-D__AFL_COMPILER&#x3D;1”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION&#x3D;1”;</li>
+</ul>
+</li>
+<li>如果设置了AFL_NO_BUILTIN<ul>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-fno-builtin-strcmp”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-fno-builtin-strncmp”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-fno-builtin-strcasecmp”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-fno-builtin-strncasecmp”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-fno-builtin-memcmp”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-fno-builtin-strstr”;</li>
+<li>执行cc_params[cc_par_cnt++] &#x3D; “-fno-builtin-strcasestr”;</li>
+</ul>
+</li>
+<li>执行 cc_params[cc_par_cnt] &#x3D; NULL;，为了截断区分</li>
+</ul>
+<h1 id="afl-as-c"><a href="#afl-as-c" class="headerlink" title="afl-as.c"></a>afl-as.c</h1><p>该文件的主要逻辑是通过一系列操作得到汇编需要的命令行参数，接着通过execvp执行得到.s汇编文件，接着对于汇编文件进行插桩</p>
+<h2 id="main-int-argc-char-argv"><a href="#main-int-argc-char-argv" class="headerlink" title="main(int argc, char** argv)"></a>main(int argc, char** argv)</h2><p>定义的变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c">s32 pid;<br>u32 rand_seed;<br><span class="hljs-type">int</span> status;<br>u8* inst_ratio_str = getenv(<span class="hljs-string">&quot;AFL_INST_RATIO&quot;</span>);<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">timeval</span> <span class="hljs-title">tv</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">timezone</span> <span class="hljs-title">tz</span>;</span><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>获取环境变量AFL_INST_RATIO，赋值给inst_ratio_str</li>
+<li>获取环境变量CLANG_ENV_VAR，两次!!，然后赋值给clang_mode</li>
+<li>获取随机数种子，rand_seed &#x3D; tv.tv_sec ^ tv.tv_usec ^ getpid();</li>
+<li>进入edit_params函数</li>
+<li>设置环境变量AS_LOOP_ENV_VAR为1</li>
+<li>条件判断，如果环境变量AFL_USE_ASAN或者AFL_USE_MSAN<ul>
+<li>设置sanitizer &#x3D; 1;inst_ratio &#x2F;&#x3D; 3;</li>
+</ul>
+</li>
+<li>判断just_version是否为1，如果为1则不会对.s文件插桩</li>
+<li>创建子进程，执行execvp(as_params[0], (<strong>char</strong>**)as_params);，父进程等待子进程结束</li>
+<li>获取环境变量AFL_KEEP_ASSEMBLY，存在则保存modified_file，反之则删除（默认就是删除）</li>
+<li>end</li>
+</ul>
+<h2 id="edit-params-int-argc-char-argv"><a href="#edit-params-int-argc-char-argv" class="headerlink" title="edit_params(int argc, char** argv)"></a>edit_params(int argc, char** argv)</h2><ul>
+<li>获取<code>TMPDIR</code>环境变量的值，赋值给<code>tmp_dir</code></li>
+<li>获取<code>AFL_AS</code>环境变量的值，赋值给<code>afl-as</code></li>
+<li>判断<code>tmp_dir</code>是否为空，为空则分别环境变量<code>TEMP</code>的值，赋值给<code>tmp_dir</code></li>
+<li>判断<code>tmp_dir</code>是否为空，为空则分别环境变量<code>TMP</code>的值，赋值给<code>tmp_dir</code></li>
+<li>判断<code>tmp_dir</code>是否为空，为空则将<code>&quot;/tmp&quot;</code>赋值给<code>tmp_dir</code></li>
+<li>给<code>as_params</code>分配内存<ul>
+<li>如果变量<code>afl-as</code>的值不为空，则将其值赋值给<code>as_params[0]</code></li>
+<li>反之为空，则将默认值<code>&quot;as&quot;</code>赋值给<code>as_params[0]</code></li>
+</ul>
+</li>
+<li>接着进入一个for 循环，for循环的次数是argc（也就是说这里只将用户输入的变量赋值，系统的环境变量不赋值）<ul>
+<li>如果argv存在”—64”字段，将use_64bit赋值为1；如果argv存在”—32”字段，将use_64bit赋值为0</li>
+<li>将argv的值赋值给as_params</li>
+</ul>
+</li>
+<li>将命令行输入的最后一个参数赋值给变量input_file<ul>
+<li>判断input_file[0]包含”-“字段<ul>
+<li>判断如果input_file+1存在”-version”字段<ul>
+<li>变量just_version&#x3D;1，变量modified_file&#x3D;input_file，接着goto wrap_things_up</li>
+</ul>
+</li>
+<li>不存在”-version”字段<ul>
+<li>如果input_file[1]存在内容，则输出报错信息；反之input_file&#x3D;NULL;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>input_file[0]不包含”-“字段，<ul>
+<li>则依次比较input_file字段里是否存在tmp_dir的值、”&#x2F;var&#x2F;tmp”、”&#x2F;tmp”，以上三个字段其中之一不符合，则将变量pass_thru赋值为1（该变量为1则说明此时使用户传入的文件，反之则是默认的文件处理）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>modfiled_file被赋值，赋值的格式为”%s&#x2F;.afl-%u-%u.s”，参数依次为tmp_dir、getpid()和time(NULL)</li>
+<li>wrap_things_up：<ul>
+<li>将as_params的最后一个值赋值为modified_file，同时尾部置为NULL</li>
+</ul>
+</li>
+</ul>
+<h2 id="add-instrumentation-void"><a href="#add-instrumentation-void" class="headerlink" title="add_instrumentation(void)"></a>add_instrumentation(void)</h2><p>首先定义了一堆变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u8 line[MAX_LINE];<br><br>FILE* inf;<br>FILE* outf;<br>s32 outfd;<br>u32 ins_lines = <span class="hljs-number">0</span>;<br><br>u8  instr_ok = <span class="hljs-number">0</span>, skip_csect = <span class="hljs-number">0</span>, skip_next_label = <span class="hljs-number">0</span>,<br>    skip_intel = <span class="hljs-number">0</span>, skip_app = <span class="hljs-number">0</span>, instrument_next = <span class="hljs-number">0</span><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>判断input_file是否存在，如果存在则以只读模式打开，并赋值给FILE* inf；反之则是复制stdin给FILE* inf</li>
+<li>以「 O_WRONLY | O_EXCL | O_CREAT, 0600」模式打开modified_file文件，然后赋值给outfd<ul>
+<li>判断这个文件是否成功打开</li>
+</ul>
+</li>
+<li>接着使用fdopen共享outfd，赋值给FILE* outf<ul>
+<li>判断是否成功共享</li>
+</ul>
+</li>
+</ul>
+<p>下面是主要去插桩的地方</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* If we&#x27;re in the right mood for instrumenting, check for function</span><br><span class="hljs-comment">   names or conditional labels. This is a bit messy, but in essence,</span><br><span class="hljs-comment">   we want to catch:</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">     ^main:      - function entry point (always instrumented)</span><br><span class="hljs-comment">     ^.L0:       - GCC branch label</span><br><span class="hljs-comment">     ^.LBB0_0:   - clang branch label (but only in clang mode)</span><br><span class="hljs-comment">     ^\tjnz foo  - conditional branches</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">   ...but not:</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">     ^# BB#0:    - clang comments</span><br><span class="hljs-comment">     ^ # BB#0:   - ditto</span><br><span class="hljs-comment">     ^.Ltmp0:    - clang non-branch labels</span><br><span class="hljs-comment">     ^.LC0       - GCC non-branch labels</span><br><span class="hljs-comment">     ^.LBB0_0:   - ditto (when in GCC mode)</span><br><span class="hljs-comment">     ^\tjmp foo  - non-conditional jumps</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">   Additionally, clang and GCC on MacOS X follow a different convention</span><br><span class="hljs-comment">   with no leading dots on labels, hence the weird maze of #ifdefs</span><br><span class="hljs-comment">   later on.</span><br><span class="hljs-comment"></span><br><span class="hljs-comment"> *</span><br></code></pre></td></tr></table></figure>
+
+
+<p>从注释可以得知，main函数入口、gcc和clang的label 标签、条件跳转是插桩的地方。一些注释、无条件跳转、非label标签都是不插桩的地方</p>
+<p>接着进入一个大循环，这个循环就是主要的插桩逻辑</p>
+<ul>
+<li>进入循环，循环的条件是fgets(line, MAX_LINE, inf)，读取MAX_LINE-1行数据</li>
+<li>条件判断(!pass_thru &amp;&amp; !skip_intel &amp;&amp; !skip_app &amp;&amp; !skip_csect &amp;&amp; instr_ok &amp;&amp; instrument_next &amp;&amp; line[0] &#x3D;&#x3D; ‘\t’ &amp;&amp; isalpha(line[1]))<ul>
+<li>如果满足，则使用通过判断use_64bit这个变量来判断，使用fprintf将对应的64&#x2F;32位的插桩汇编插入到当前位置</li>
+<li>接着将instrument_next&#x3D;0，然后ins_lines++</li>
+</ul>
+</li>
+<li>将读取的line，输入到outf中，也就是保存到这个文件里</li>
+<li>如果变量pass_thru&#x3D;1，则continue。这个变量为1说明文件不是用户指定的，然后回到循环开始，无法进入上面的if分支，也就是说，<strong>不是用户指定的文件，不进行插桩</strong>。</li>
+<li>条件判断(line[0] &#x3D;&#x3D; ‘\t’ &amp;&amp; line[1] &#x3D;&#x3D; ‘.’)<ul>
+<li>条件判断(!clang_mode &amp;&amp; instr_ok &amp;&amp; !strncmp(line + 2, “p2align “, 8) &amp;&amp; isdigit(line[10]) &amp;&amp; line[11] &#x3D;&#x3D; ‘\n’)，满足skip_next_label&#x3D;1</li>
+<li>条件判断，如果line+2中存在text、section\t.text、section\t__TEXT,__ text、section <strong>TEXT,</strong> text字段，满足则instr_ok &#x3D; 1，说明可以插桩，然后回到循环开头</li>
+<li>条件判断，如果line+2中存在section\t、section、bss\n、data\n这些字段，满足则instr_ok&#x3D;0，说明不可以插桩，然后回到循环开头</li>
+</ul>
+</li>
+<li>条件判断(strstr(line, “.code”))，这里是为了防止64位模式给32位程序插桩而产生的判断<ul>
+<li>如果line中存在.code32，则skip_csect &#x3D; use_64bit</li>
+<li>如果line中存在.code64，则skip_csect &#x3D; !use_64bit</li>
+</ul>
+</li>
+<li>如果line中存在.intel_syntax字段，则skip_intel&#x3D;1</li>
+<li>如果line中存在.att_syntax字段，则skip_intel&#x3D;0，说明插转不支持intel语法</li>
+<li>条件判断(line[0] &#x3D;&#x3D; ‘#’ || line[1] &#x3D;&#x3D; ‘#’)，如果存在注释或者伪指令<ul>
+<li>如果line中存在#APP，则skip_app&#x3D;1，说明这里不会对手写的汇编进行插桩</li>
+<li>如果line中存在#NO_APP，则skip_app&#x3D;0</li>
+</ul>
+</li>
+<li>条件判断，(skip_intel || skip_app || skip_csect || !instr_ok || line[0] &#x3D;&#x3D; ‘#’ || line[0] &#x3D;&#x3D; ‘ ‘)<ul>
+<li>如果存在intel语法、手写汇编、架构不一致、无法插桩、注释行、空行，则回到循环开头</li>
+</ul>
+</li>
+<li>条件判断(line[0] &#x3D;&#x3D; ‘\t’)<ul>
+<li>条件判断(line[1] &#x3D;&#x3D; ‘j’ &amp;&amp; line[2] !&#x3D; ‘m’ &amp;&amp; R(100) &lt; inst_ratio)<ul>
+<li>插桩，ins_lines++</li>
+</ul>
+</li>
+<li>回到循环开头</li>
+</ul>
+</li>
+<li>条件判断(strstr(line, “:”))<ul>
+<li>条件判断(line[0] &#x3D;&#x3D; ‘.’)<ul>
+<li>如果满足.L&lt;num&gt; &#x2F; .LBB&lt;num&gt; 的形式，并且R(100) &lt; inst_ratio，这里插桩的概率取决于inst_ratio的数值<ul>
+<li>如果skip_next_label&#x3D;0，那么instrument_next&#x3D;1；</li>
+<li>如果skip_next_label&#x3D;1，那么instrument_next&#x3D;0；</li>
+</ul>
+</li>
+<li>不符合，则instrument_next &#x3D; 1;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>循环结束</li>
+</ul>
+<p>下面的代码很简单，直接贴出来</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (ins_lines)<br>  <span class="hljs-built_in">fputs</span>(use_64bit ? main_payload_64 : main_payload_32, outf);<br><br><span class="hljs-keyword">if</span> (input_file) fclose(inf);<br>fclose(outf);<br><br><span class="hljs-keyword">if</span> (!be_quiet) &#123;<br><br>  <span class="hljs-keyword">if</span> (!ins_lines) WARNF(<span class="hljs-string">&quot;No instrumentation targets found%s.&quot;</span>,<br>                        pass_thru ? <span class="hljs-string">&quot; (pass-thru mode)&quot;</span> : <span class="hljs-string">&quot;&quot;</span>);<br>  <span class="hljs-keyword">else</span> OKF(<span class="hljs-string">&quot;Instrumented %u locations (%s-bit, %s mode, ratio %u%%).&quot;</span>,<br>           ins_lines, use_64bit ? <span class="hljs-string">&quot;64&quot;</span> : <span class="hljs-string">&quot;32&quot;</span>,<br>           getenv(<span class="hljs-string">&quot;AFL_HARDEN&quot;</span>) ? <span class="hljs-string">&quot;hardened&quot;</span> : <br>           (sanitizer ? <span class="hljs-string">&quot;ASAN/MSAN&quot;</span> : <span class="hljs-string">&quot;non-hardened&quot;</span>),<br>           inst_ratio);<br> <br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>如果这个.s文件被插桩，则会在尾部插入一段64&#x2F;32位的payload</li>
+<li>如果input_file存在，那么关闭inf</li>
+<li>关闭outf</li>
+<li>一些简单判断的输出</li>
+</ul>
+<h2 id="简单的调试"><a href="#简单的调试" class="headerlink" title="简单的调试"></a>简单的调试</h2><p>terminal 接受三个参数</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_Rj-JRrvEiN.png" srcset="/img/loading.gif" lazyload></p>
+<p>第二个必须是架构？</p>
+<p>第三个是输入文件</p>
+<p>terminal 最后一个是输入的文件名称</p>
+<p>如果最后一个是<code>--version</code> 那么就会输出对应的版本信息</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_tyx4t5to0g.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="afl-clang-fast-c"><a href="#afl-clang-fast-c" class="headerlink" title="afl-clang-fast.c"></a>afl-clang-fast.c</h1><blockquote>
+<p>整体来说和afl-gcc的流程一致</p>
+</blockquote>
+<h2 id="find-obj-u8-argv0"><a href="#find-obj-u8-argv0" class="headerlink" title="find_obj(u8* argv0)"></a>find_obj(u8* argv0)</h2><ul>
+<li>获取环境变量AFL_PATH的值，赋值给afl_path</li>
+<li>如果afl_path存在<ul>
+<li>去找其目录下的afl-llvm-rt.o（如果afl_path为&#x2F;home&#x2F;flyyy&#x2F;Desktop&#x2F;workspace&#x2F;fuzz&#x2F;AFL，那么就去找这个目录下的afl-llvm-rt.o）</li>
+<li>同时判断是否可达，则赋值给obj_path，然后return</li>
+</ul>
+</li>
+<li>获取”&#x2F;“ 后面的执行文件，以上面为例，就是&#x2F;alf-clang-fast，并赋值给slash</li>
+<li>如果slash存在<ul>
+<li>获取前缀目录，赋值给dir，也就是dir&#x3D;&#x2F;home&#x2F;flyyy&#x2F;Desktop&#x2F;workspace&#x2F;fuzz&#x2F;AFL</li>
+<li>寻找dir目录下的afl-llvm-rt.o</li>
+<li>同时判断是否可达，则赋值给obj_path，然后return</li>
+</ul>
+</li>
+<li>以上都不满足就去默认目录&#x2F;usr&#x2F;local&#x2F;lib&#x2F;afl下寻找afl-llvm-rt.o<ul>
+<li>判断是否可达，则赋值给obj_path，然后return</li>
+</ul>
+</li>
+</ul>
+<h2 id="edit-params-u32-argc-char-argv-1"><a href="#edit-params-u32-argc-char-argv-1" class="headerlink" title="edit_params(u32 argc, char** argv)"></a>edit_params(u32 argc, char** argv)</h2><p>函数内定义的变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">u8 fortify_set = <span class="hljs-number">0</span>, asan_set = <span class="hljs-number">0</span>, x_set = <span class="hljs-number">0</span>, bit_mode = <span class="hljs-number">0</span>;<br>u8 *name<br><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>获取agrv[0]变量中，包括”&#x2F;“以及之后的值，赋值给name</li>
+<li>如果name存在则name++，反之name&#x3D;argv[0]</li>
+<li>比较name<ul>
+<li>如果name &#x3D;&#x3D; “afl-clang-fast++”，则去获取环境变量AFL_CXX，赋值给alt_cxx，如果alt_cxx存在则cc_params[0]&#x3D;afl_cxx，反之cc_params[0]&#x3D;”clang++”</li>
+<li>如果name &#x3D;&#x3D; “afl-clang-fast”，则去获取环境变量AFL_CC，赋值给alt_cc，如果alt_cc存在则cc_params[0]&#x3D;afl_cc，反之cc_params[0]&#x3D;”clang”</li>
+</ul>
+</li>
+<li>接着给cc_params添加几个参数，分别是 “-Xclang” “-loa” “-Xclang”和<a target="_blank" rel="noopener" href="http://afl-llvm-pass.so/" title="afl-llvm-pass.so">afl-llvm-pass.so</a>的绝对路径（find_obj获取）</li>
+<li>进入循环，判断传入的agrv数组内容，根据内容来给变量赋值<ul>
+<li> u8<em>cur&#x3D;</em>(++argv);</li>
+<li>存在”-m32”或者”armv7a-linux-androideabi”，则bit_mode &#x3D; 32;</li>
+<li>存在”-m64”，则bit_mode &#x3D; 64;</li>
+<li>存在”-x”，则x_set&#x3D;1;</li>
+<li>存在”-fsanitize&#x3D;address”或者”-fsanitize&#x3D;memory”，则asan_set&#x3D;1</li>
+<li>存在”FORTIFY_SOURCE”，则fortify_set &#x3D; 1;</li>
+<li>存在 “-Wl,-z,defs”或者”-Wl,–no-undefined”，则回到循环开始</li>
+<li>cc_params[cc_par_cnt++] &#x3D; cur</li>
+</ul>
+</li>
+<li>如果环境变量AFL_HARDE存在<ul>
+<li>cc_param增加一个”-fstack-protector-all”</li>
+<li>如果fortify_set&#x3D;&#x3D;0，cc_param增加一个-D_FORTIFY_SOURCE&#x3D;2</li>
+</ul>
+</li>
+<li>如果asan_set&#x3D;&#x3D;0，并且环境变量AFL_USE_ASAN和AFL_USE_MSAN不同时存在<ul>
+<li>AFL_USE_ASAN存在，cc_params增加两个变量”-U_FORTIFY_SOURCE”和”-fsanitize&#x3D;address”</li>
+<li>AFL_USE_MSAN存在，cc_params增加两个变量”-U_FORTIFY_SOURCE”和”-fsanitize&#x3D;memory”</li>
+</ul>
+</li>
+<li>如果环境变量AFL_DONT_OPTIMIZE存在<ul>
+<li>cc_params增加三个变量，默认是o3优化</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_KxoqFjbM4X.png" srcset="/img/loading.gif" lazyload></p>
+<p>对于的解释-funroll-loops</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_dShxlm8YbJ.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>如果环境变量AFL_NO_BUILTIN存在</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_RpAI8DVfsg.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>统一添加几个参数</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_DA871W411C.png" srcset="/img/loading.gif" lazyload></p>
+<p>最后会添加一些参数，是为了避免插桩的代码被优化，这里采取了三种方法</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs c">  <span class="hljs-comment">/* When the user tries to use persistent or deferred forkserver modes by</span><br><span class="hljs-comment">     appending a single line to the program, we want to reliably inject a</span><br><span class="hljs-comment">     signature into the binary (to be picked up by afl-fuzz) and we want</span><br><span class="hljs-comment">     to call a function from the runtime .o file. This is unnecessarily</span><br><span class="hljs-comment">     painful for three reasons:</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">     1) We need to convince the compiler not to optimize out the signature.</span><br><span class="hljs-comment">        This is done with __attribute__((used)).</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">     2) We need to convince the linker, when called with -Wl,--gc-sections,</span><br><span class="hljs-comment">        not to do the same. This is done by forcing an assignment to a</span><br><span class="hljs-comment">        &#x27;volatile&#x27; pointer.</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">     3) We need to declare __afl_persistent_loop() in the global namespace,</span><br><span class="hljs-comment">        but doing this within a method in a class is hard - :: and extern &quot;C&quot;</span><br><span class="hljs-comment">        are forbidden and __attribute__((alias(...))) doesn&#x27;t work. Hence the</span><br><span class="hljs-comment">        __asm__ aliasing trick.</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">   */</span><br><br>  cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-D__AFL_LOOP(_A)=&quot;</span><br>    <span class="hljs-string">&quot;(&#123; static volatile char *_B __attribute__((used)); &quot;</span><br>    <span class="hljs-string">&quot; _B = (char*)\&quot;&quot;</span> PERSIST_SIG <span class="hljs-string">&quot;\&quot;; &quot;</span><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> __APPLE__</span><br>    <span class="hljs-string">&quot;__attribute__((visibility(\&quot;default\&quot;))) &quot;</span><br>    <span class="hljs-string">&quot;int _L(unsigned int) __asm__(\&quot;___afl_persistent_loop\&quot;); &quot;</span><br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-string">&quot;__attribute__((visibility(\&quot;default\&quot;))) &quot;</span><br>    <span class="hljs-string">&quot;int _L(unsigned int) __asm__(\&quot;__afl_persistent_loop\&quot;); &quot;</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* ^__APPLE__ */</span></span><br>    <span class="hljs-string">&quot;_L(_A); &#125;)&quot;</span>;<br><br>  cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-D__AFL_INIT()=&quot;</span><br>    <span class="hljs-string">&quot;do &#123; static volatile char *_A __attribute__((used)); &quot;</span><br>    <span class="hljs-string">&quot; _A = (char*)\&quot;&quot;</span> DEFER_SIG <span class="hljs-string">&quot;\&quot;; &quot;</span><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> __APPLE__</span><br>    <span class="hljs-string">&quot;__attribute__((visibility(\&quot;default\&quot;))) &quot;</span><br>    <span class="hljs-string">&quot;void _I(void) __asm__(\&quot;___afl_manual_init\&quot;); &quot;</span><br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-string">&quot;__attribute__((visibility(\&quot;default\&quot;))) &quot;</span><br>    <span class="hljs-string">&quot;void _I(void) __asm__(\&quot;__afl_manual_init\&quot;); &quot;</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* ^__APPLE__ */</span></span><br>    <span class="hljs-string">&quot;_I(); &#125; while (0)&quot;</span><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>如果x_set存在</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_hGJwkilJHi.png" srcset="/img/loading.gif" lazyload></p>
+<p>最后根据上面的代码来判断最后一个参数，根据64&#x2F;32位来判断</p>
+<p>非安卓平台都需要执行这个</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs c"><br><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> __ANDROID__</span><br>  <span class="hljs-keyword">switch</span> (bit_mode) &#123;<br><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:<br>      cc_params[cc_par_cnt++] = alloc_printf(<span class="hljs-string">&quot;%s/afl-llvm-rt.o&quot;</span>, obj_path);<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">32</span>:<br>      cc_params[cc_par_cnt++] = alloc_printf(<span class="hljs-string">&quot;%s/afl-llvm-rt-32.o&quot;</span>, obj_path);<br><br>      <span class="hljs-keyword">if</span> (access(cc_params[cc_par_cnt - <span class="hljs-number">1</span>], R_OK))<br>        FATAL(<span class="hljs-string">&quot;-m32 is not supported by your compiler&quot;</span>);<br><br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">64</span>:<br>      cc_params[cc_par_cnt++] = alloc_printf(<span class="hljs-string">&quot;%s/afl-llvm-rt-64.o&quot;</span>, obj_path);<br><br>      <span class="hljs-keyword">if</span> (access(cc_params[cc_par_cnt - <span class="hljs-number">1</span>], R_OK))<br>        FATAL(<span class="hljs-string">&quot;-m64 is not supported by your compiler&quot;</span>);<br><br>      <span class="hljs-keyword">break</span>;<br><br>  &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>  cc_params[cc_par_cnt] = <span class="hljs-literal">NULL</span><br></code></pre></td></tr></table></figure>
+
+
+<h2 id="main-int-argc-char-argv-1"><a href="#main-int-argc-char-argv-1" class="headerlink" title="main(int argc, char** argv)"></a>main(int argc, char** argv)</h2><h2 id="afl-llvm-pass-so-cc"><a href="#afl-llvm-pass-so-cc" class="headerlink" title="afl-llvm-pass.so.cc"></a>afl-llvm-pass.so.cc</h2><p>llvm-pass待学习</p>
+<h2 id="afl-llvm-rt-o-c"><a href="#afl-llvm-rt-o-c" class="headerlink" title="afl-llvm-rt.o.c"></a>afl-llvm-rt.o.c</h2><h1 id="afl-fuzz-c"><a href="#afl-fuzz-c" class="headerlink" title="afl-fuzz.c"></a>afl-fuzz.c</h1><p>这个是主要的fuzz流程产生的函数</p>
+<h2 id="参数解析"><a href="#参数解析" class="headerlink" title="参数解析"></a>参数解析</h2><p>首先是一些变量的定义，时间&#x2F;随机种子的获取、文档路径的判断，接着就到了参数的解析，如下的一个循环，其中的+表示遇到非如下涉及到的参数则停止解析，参数后带:表示这个参数的后面需要跟一个参数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">while</span> ((opt = getopt(argc, argv, <span class="hljs-string">&quot;+i:o:f:m:b:t:T:dnCB:S:M:x:QV&quot;</span>)) &gt; <span class="hljs-number">0</span>)<br></code></pre></td></tr></table></figure>
+
+
+<p>解释下各个参数</p>
+<ul>
+<li>-i [in_dir]<ul>
+<li>in_dir是种子的输入目录</li>
+</ul>
+</li>
+<li>-o [out_dir]<ul>
+<li>out_dir是结果的输出目录</li>
+</ul>
+</li>
+<li>-M [sync_id]<ul>
+<li>sync_id第一种情况，任意指定</li>
+<li>sync_id第二种情况，格式为sync_id:master_id&#x2F;master_max;满足条件是(sscanf(c + 1, “%u&#x2F;%u”, &amp;master_id, &amp;master_max) !&#x3D; 2 || !master_id || !master_max || master_id &gt; master_max || master_max &gt; 1000000)</li>
+</ul>
+</li>
+<li>-S [sync_id]<ul>
+<li>sync_id任意指定</li>
+</ul>
+</li>
+<li>-f [out_file]<ul>
+<li>out_file为目标文件</li>
+</ul>
+</li>
+<li>-x [extras_dir]<ul>
+<li>extras_dir为字典目录</li>
+</ul>
+</li>
+<li>-t [exec_tmout][suffix]<ul>
+<li>exec_tmout为%u，不能小于5，开头不能是-</li>
+<li>suffix为%c，可有可无，为’+’号是表示宽松模式，也就是执行超过exec_tmout时不fault而是warn</li>
+</ul>
+</li>
+<li>-m [mem_limit][suffix]<ul>
+<li>mem_limit为%llu，不能以-开头<ul>
+<li>不能小于5</li>
+<li>如果是32位系统，不能大于2000</li>
+</ul>
+</li>
+<li>suffix其实就是单位，有TGkM，不同的会进行对应大小 *&#x2F;1024</li>
+</ul>
+</li>
+<li>-b [cpu_to_bind]<ul>
+<li>cpu_to_bind为%u，但是不能小于1</li>
+</ul>
+</li>
+<li>-B [in_bitmap]<ul>
+<li>in_bitmap解析无误之后，会调用read_bitmap(in_bitmap);</li>
+</ul>
+</li>
+<li>-n<ul>
+<li>就是dumb mode</li>
+</ul>
+</li>
+<li>-T [use_banner]<ul>
+<li>use_banner用户指定的bannner</li>
+</ul>
+</li>
+<li>-Q<ul>
+<li>指定为qemu mode</li>
+<li>如果没有内存限制的话，就会设置一个默认的内存限制，执行mem_limit &#x3D; MEM_LIMIT_QEMU</li>
+</ul>
+</li>
+<li>-V<ul>
+<li>输出版本信息</li>
+</ul>
+</li>
+</ul>
+<h2 id="setup-signal-handlers-void"><a href="#setup-signal-handlers-void" class="headerlink" title="setup_signal_handlers(void)"></a>setup_signal_handlers(void)</h2><p><code>setup_signal_handlers</code> 函数设置信号</p>
+<h2 id="check-asan-opts-void"><a href="#check-asan-opts-void" class="headerlink" title="check_asan_opts(void)"></a>check_asan_opts(void)</h2><h2 id="fix-up-sync-void"><a href="#fix-up-sync-void" class="headerlink" title="fix_up_sync(void)"></a>fix_up_sync(void)</h2><p>这个函数为了设置sync_dir和out_dir，其中sync_dir是out_dir的上一层目录</p>
+<ul>
+<li>如果开启了dumb mode，则fatal，因为-S -M与-n互斥</li>
+<li>如果skip_deterministic&#x3D;1，<ul>
+<li>如果force_deterministic&#x3D;1，则说明-M和-d互斥，因此fatal（因为-M会设置force_deterministic&#x3D;1，也就是好使用确定性变异，而skip_deterministic是跳过确定性变异）</li>
+<li>如果force_deterministic≠1，则说明-S和-d冗余，因此fatal（-S和-d都会设置skip_deterministic&#x3D;1，也就是跳过确定性变异）</li>
+</ul>
+</li>
+<li>检查后sync_id，只能包含数字和’-‘ ‘_‘，否则fatal</li>
+<li>检测sync_id长度不能大于32，否则fatal</li>
+<li>赋值sync_dir &#x3D; out_dir</li>
+<li>赋值out_dir &#x3D; out_dir&#x2F;sync_id</li>
+<li>如果force_deterministic为0的话，也就是此时不是master<ul>
+<li>对应的就是slave，那么设置skip_deterministic &#x3D; 1;use_splicing &#x3D; 1;</li>
+<li>也就是跳过确定性变异</li>
+</ul>
+</li>
+</ul>
+<h2 id="save-cmdline-u32-argc-char-argv"><a href="#save-cmdline-u32-argc-char-argv" class="headerlink" title="save_cmdline(u32 argc, char** argv)"></a>save_cmdline(u32 argc, char** argv)</h2><p>拷贝命令行参数并赋值给orig_cmdline，也就是保存初始的命令行参数</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_8kUjMfma4M.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="fix-up-banner-u8-name"><a href="#fix-up-banner-u8-name" class="headerlink" title="fix_up_banner(u8* name)"></a>fix_up_banner(u8* name)</h2><p>设置use_banner</p>
+<ul>
+<li>如果use_banner为空<ul>
+<li>如果sync_id存在，则use_banner&#x3D;sync_id</li>
+<li>如果sync_id不存在，则use_banner&#x3D;目标程序名称，例如上方命令行，也就是test</li>
+</ul>
+</li>
+<li>判断use_banner的长度，如果大于40则被截断</li>
+</ul>
+<h2 id="check-if-tty-void"><a href="#check-if-tty-void" class="headerlink" title="check_if_tty(void)"></a>check_if_tty(void)</h2><p>检查是否是tty设备</p>
+<h2 id="get-core-count-void"><a href="#get-core-count-void" class="headerlink" title="get_core_count(void)"></a>get_core_count(void)</h2><h2 id="bind-to-free-cpu-void"><a href="#bind-to-free-cpu-void" class="headerlink" title="bind_to_free_cpu(void)"></a>bind_to_free_cpu(void)</h2><h2 id="check-crash-handling-void"><a href="#check-crash-handling-void" class="headerlink" title="check_crash_handling(void)"></a>check_crash_handling(void)</h2><h2 id="check-cpu-governor-void"><a href="#check-cpu-governor-void" class="headerlink" title="check_cpu_governor(void)"></a>check_cpu_governor(void)</h2><h2 id="setup-post-void"><a href="#setup-post-void" class="headerlink" title="setup_post(void)"></a>setup_post(void)</h2><p>调用自己提前写的的so，去执行对应的逻辑</p>
+<ul>
+<li>如果环境变量AFL_POST_LIBRARY不存在，则return</li>
+<li>如果环境变量AFL_POST_LIBRARY存在<ul>
+<li>调用dlopen(fn, RTLD_NOW)加在so的动态库</li>
+<li>在加载的库中查找名为 afl_postprocess 的函数，并将其地址存入 post_handler 函数指针</li>
+<li>简单的测试下，调用post_handler(“hello”, &amp;tlen);</li>
+</ul>
+</li>
+</ul>
+<p>其实这个so可以直接写，然后执行自己的逻辑</p>
+<h2 id="setup-shm-void"><a href="#setup-shm-void" class="headerlink" title="setup_shm(void)"></a>setup_shm(void)</h2><p>申请一块共享内存，然后通过shmat将这一块内核的空间让afl进程也可以访问</p>
+<p>其中的MAP_SIZE &#x3D; 1 &lt;&lt; 16</p>
+<ul>
+<li>如果没有提前指定in_bitmap，那么初始化virgin_bits，memset(virgin_bits, 255, MAP_SIZE)</li>
+<li>如果-B指定了in_bitmap，那么会跳过初始化virgin_bits</li>
+<li>接着同样的方式初始化virgin_tmout和virgin_crash</li>
+<li>申请一段共享内存，后续将这一段内存attach到进程的地址空间<ul>
+<li>trace_bits &#x3D; shmat(shm_id, NULL, 0);</li>
+</ul>
+</li>
+</ul>
+<p>下方是共享内存attach前后的变化</p>
+<p>执行前</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">AFL进程地址空间:<br>┌─────────────────┐<br>│   代码段        │<br>│   数据段        │  <br>│   堆           │<br>│   栈           │<br>└─────────────────┘<br><br>共享内存: 存在于内核中，但AFL无法访问<br></code></pre></td></tr></table></figure>
+
+
+<p>执行后</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">AFL进程地址空间:<br>┌─────────────────┐<br>│   代码段        │<br>│   数据段        │  <br>│   堆           │<br>│ trace_bits ────┼──→ 共享内存段 (64KB)<br>│   栈           │     [0][0][0]...[0]<br>└─────────────────┘<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="init-count-class16-void"><a href="#init-count-class16-void" class="headerlink" title="init_count_class16(void)"></a>init_count_class16(void)</h2><p>这里是初始化count_class_lookup16</p>
+<p>这里是主要的初始化逻辑</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c">u32 b1, b2;<br><br><span class="hljs-keyword">for</span> (b1 = <span class="hljs-number">0</span>; b1 &lt; <span class="hljs-number">256</span>; b1++) <br>  <span class="hljs-keyword">for</span> (b2 = <span class="hljs-number">0</span>; b2 &lt; <span class="hljs-number">256</span>; b2++)<br>    count_class_lookup16[(b1 &lt;&lt; <span class="hljs-number">8</span>) + b2] = <br>      (count_class_lookup8[b1] &lt;&lt; <span class="hljs-number">8</span>) |<br>      count_class_lookup8[b2];<br><br></code></pre></td></tr></table></figure>
+
+
+<p>这里为了避免噪音，因此对于命中的次数进行了分类</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> u8 count_class_lookup8[<span class="hljs-number">256</span>] = &#123;<br>  [<span class="hljs-number">0</span>]           = <span class="hljs-number">0</span>,     <span class="hljs-comment">// 0次执行 → 桶0</span><br>  [<span class="hljs-number">1</span>]           = <span class="hljs-number">1</span>,     <span class="hljs-comment">// 1次执行 → 桶1  </span><br>  [<span class="hljs-number">2</span>]           = <span class="hljs-number">2</span>,     <span class="hljs-comment">// 2次执行 → 桶2</span><br>  [<span class="hljs-number">3</span>]           = <span class="hljs-number">4</span>,     <span class="hljs-comment">// 3次执行 → 桶4</span><br>  [<span class="hljs-number">4</span> ... <span class="hljs-number">7</span>]     = <span class="hljs-number">8</span>,     <span class="hljs-comment">// 4-7次执行 → 桶8</span><br>  [<span class="hljs-number">8</span> ... <span class="hljs-number">15</span>]    = <span class="hljs-number">16</span>,    <span class="hljs-comment">// 8-15次执行 → 桶16</span><br>  [<span class="hljs-number">16</span> ... <span class="hljs-number">31</span>]   = <span class="hljs-number">32</span>,    <span class="hljs-comment">// 16-31次执行 → 桶32</span><br>  [<span class="hljs-number">32</span> ... <span class="hljs-number">127</span>]  = <span class="hljs-number">64</span>,    <span class="hljs-comment">// 32-127次执行 → 桶64</span><br>  [<span class="hljs-number">128</span> ... <span class="hljs-number">255</span>] = <span class="hljs-number">128</span>    <span class="hljs-comment">// 128-255次执行 → 桶128</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+<p>这里是初始化的一个例子。lookup16双字节检索，为了速度更快</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 例子：输入 0x1234 (b1=0x12=18, b2=0x34=52)</span><br>b1 = <span class="hljs-number">18</span>  → count_class_lookup8[<span class="hljs-number">18</span>] = <span class="hljs-number">32</span><br>b2 = <span class="hljs-number">52</span>  → count_class_lookup8[<span class="hljs-number">52</span>] = <span class="hljs-number">64</span><br><br><span class="hljs-comment">// 结果：(16 &lt;&lt; 8) | 64 = 0x2040</span><br>count_class_lookup16[<span class="hljs-number">0x1234</span>] = <span class="hljs-number">0x2040</span><br></code></pre></td></tr></table></figure>
+
+
+<h2 id="setup-dirs-fds-void-x20"><a href="#setup-dirs-fds-void-x20" class="headerlink" title="setup_dirs_fds(void)&#x20;"></a>setup_dirs_fds(void)&#x20;</h2><p>创建out_dir下的一系列文件</p>
+<ul>
+<li>如果sync_dir存在，则创建这个文件夹</li>
+<li>接着创建out_dir<ul>
+<li>如果之前已经存在<ul>
+<li>那么会判断状态是否是EEXIST，是这个状态则会fatal退出</li>
+<li>不是这个EEXIST则调用maybe_delete_out_dir()</li>
+</ul>
+</li>
+<li>如果之前不存在<ul>
+<li>如果in_place_resume为1，则报错</li>
+<li>调用open打开文件，并赋值给out_dir_fd</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>接着创建一系列文件夹</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs markdown">%s =&gt; out<span class="hljs-emphasis">_dir</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">%s/queue</span><br><span class="hljs-emphasis">%s/queue/.state/</span><br><span class="hljs-emphasis">%s/queue/.state/deterministic_</span>done/<br>%s/queue/.state/auto<span class="hljs-emphasis">_extras/</span><br><span class="hljs-emphasis">%s/queue/.state/redundant_</span>edges/<br>%s/queue/.state/variable<span class="hljs-emphasis">_behavior/</span><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>如果存在sync_id<ul>
+<li>创建%s&#x2F;.synced&#x2F;文件夹</li>
+</ul>
+</li>
+</ul>
+<p>接着继续创建文件夹</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">%s =&gt; out_dir<br><br>%s/crashes<br>%s/hangs<br><br><span class="hljs-built_in">fprintf</span>(plot_file, <span class="hljs-string">&quot;# unix_time, cycles_done, cur_path, paths_total, &quot;</span><br>                     <span class="hljs-string">&quot;pending_total, pending_favs, map_size, unique_crashes, &quot;</span><br>                     <span class="hljs-string">&quot;unique_hangs, max_depth, execs_per_sec\n&quot;</span>);<br><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>执行dev_null_fd &#x3D; open(“&#x2F;dev&#x2F;null”, O_RDWR);</li>
+<li>执行dev_urandom_fd &#x3D; open(“&#x2F;dev&#x2F;urandom”, O_RDONLY);</li>
+<li>创建%s&#x2F;plot_data文件，调用fdopen打开该文件，返回值由plot_file保存，接着调用fprintf(plot_file, “xxxx”);将内容写入文件</li>
+</ul>
+<h2 id="read-testcases-void"><a href="#read-testcases-void" class="headerlink" title="read_testcases(void)"></a>read_testcases(void)</h2><p>这个函数主要是对于in_dir目录下的种子进行操作，首先是判断shuffle_queue标志位，接着判断了id_dir下的种子是否发生了确定性变异，通过.state&#x2F;deterministic_done&#x2F;filename来判断。对于发生确定性变异的种子会在其添加到queue时，设置passed_det&#x3D;1</p>
+<ul>
+<li>分配新路径fn &#x3D; alloc_printf(“%s&#x2F;queue”, in_dir);，接着判断fn是否可达，如果可达，则设置in_dir &#x3D; fn，否则就free掉</li>
+<li>扫描in_dir下的文件，执行的语句是nl_cnt &#x3D; scandir(in_dir, &amp;nl, NULL, alphasort)，scandir可以保证的读出文件的顺序是固定的，同时文件的基本信息被保存在nl变量中</li>
+<li>判断读出文件的数量<ul>
+<li>如果nl_cnt 小于0，则报错</li>
+<li>nl_cnt 大于1，且shuffle_queue&#x3D;1，则进入shuffle_ptrs函数</li>
+<li>如果shuffle_queue≠1，会进入下面的循环<ul>
+<li>获取路径fn &#x3D; alloc_printf(“%s&#x2F;%s”, in_dir, nl[i]-&gt;d_name);</li>
+<li>获取dfn &#x3D; alloc_printf(“%s&#x2F;.state&#x2F;deterministic_done&#x2F;%s”, in_dir, nl[i]-&gt;d_name);</li>
+<li>初始化passed_det &#x3D; 0，用于判断是否发生确定性变异</li>
+<li>如果dfn可达<ul>
+<li>说明这个种子已经发生过确定性变异，接着执行passed_det&#x3D;1</li>
+</ul>
+</li>
+<li>执行add_to_queue(fn, st.st_size, passed_det);</li>
+</ul>
+</li>
+<li>初始化last_path_time &#x3D; 0;</li>
+<li>初始化queued_at_start &#x3D; queued_paths;</li>
+</ul>
+</li>
+</ul>
+<h2 id="add-to-queue-u8-fname-u32-len-u8-passed-det"><a href="#add-to-queue-u8-fname-u32-len-u8-passed-det" class="headerlink" title="add_to_queue(u8* fname, u32 len, u8 passed_det)"></a>add_to_queue(u8* fname, u32 len, u8 passed_det)</h2><p>需要使用到的链表结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">queue_entry</span> &#123;</span><br><br>  u8* fname;                          <span class="hljs-comment">/* File name for the test case      */</span><br>  u32 len;                            <span class="hljs-comment">/* Input length                     */</span><br><br>  u8  cal_failed,                     <span class="hljs-comment">/* Calibration failed?              */</span><br>      trim_done,                      <span class="hljs-comment">/* Trimmed?                         */</span><br>      was_fuzzed,                     <span class="hljs-comment">/* Had any fuzzing done yet?        */</span><br>      passed_det,                     <span class="hljs-comment">/* Deterministic stages passed?     */</span><br>      has_new_cov,                    <span class="hljs-comment">/* Triggers new coverage?           */</span><br>      var_behavior,                   <span class="hljs-comment">/* Variable behavior?               */</span><br>      favored,                        <span class="hljs-comment">/* Currently favored?               */</span><br>      fs_redundant;                   <span class="hljs-comment">/* Marked as redundant in the fs?   */</span><br><br>  u32 bitmap_size,                    <span class="hljs-comment">/* Number of bits set in bitmap     */</span><br>      exec_cksum;                     <span class="hljs-comment">/* Checksum of the execution trace  */</span><br><br>  u64 exec_us,                        <span class="hljs-comment">/* Execution time (us)              */</span><br>      handicap,                       <span class="hljs-comment">/* Number of queue cycles behind    */</span><br>      depth;                          <span class="hljs-comment">/* Path depth                       */</span><br><br>  u8* trace_mini;                     <span class="hljs-comment">/* Trace bytes, if kept             */</span><br>  u32 tc_ref;                         <span class="hljs-comment">/* Trace bytes ref count            */</span><br><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">queue_entry</span> *<span class="hljs-title">next</span>,           /* <span class="hljs-title">Next</span> <span class="hljs-title">element</span>, <span class="hljs-title">if</span> <span class="hljs-title">any</span>             */</span><br><span class="hljs-class">                     *<span class="hljs-title">next_100</span>;</span>       <span class="hljs-comment">/* 100 elements ahead               */</span><br><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+<p>有了上方的结构体，这里的queue的添加就很简单。下方实现了一个简单的单链表，然后还有一个next_100的指针，每一次可以跳过100项，增加便利的速度</p>
+<p>每执行一次都会queued_paths++;pending_not_fuzzed++，当添加完毕之后会有一个获取添加表项的时间，同时更新last_path_time的值</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">add_to_queue</span><span class="hljs-params">(u8* fname, u32 len, u8 passed_det)</span> &#123;<br><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">queue_entry</span>* <span class="hljs-title">q</span> =</span> ck_alloc(<span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> queue_entry));<br><br>  q-&gt;fname        = fname;<br>  q-&gt;len          = len;<br>  q-&gt;depth        = cur_depth + <span class="hljs-number">1</span>;<br>  q-&gt;passed_det   = passed_det;<br><br>  <span class="hljs-keyword">if</span> (q-&gt;depth &gt; max_depth) max_depth = q-&gt;depth;<br><br>  <span class="hljs-keyword">if</span> (queue_top) &#123;<br><br>    queue_top-&gt;next = q;<br>    queue_top = q;<br><br>  &#125; <span class="hljs-keyword">else</span> q_prev100 = <span class="hljs-built_in">queue</span> = queue_top = q;<br><br>  queued_paths++;<br>  pending_not_fuzzed++;<br><br>  cycles_wo_finds = <span class="hljs-number">0</span>;<br><br>  <span class="hljs-comment">/* Set next_100 pointer for every 100th element (index 0, 100, etc) to allow faster iteration. */</span><br>  <span class="hljs-keyword">if</span> ((queued_paths - <span class="hljs-number">1</span>) % <span class="hljs-number">100</span> == <span class="hljs-number">0</span> &amp;&amp; queued_paths &gt; <span class="hljs-number">1</span>) &#123;<br><br>    q_prev100-&gt;next_100 = q;<br>    q_prev100 = q;<br><br>  &#125;<br><br>  last_path_time = get_cur_time();<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<p>简图表示如下</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_Znx0c-nMay.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="shuffle-ptrs-void-ptrs-u32-cnt"><a href="#shuffle-ptrs-void-ptrs-u32-cnt" class="headerlink" title="shuffle_ptrs(void** ptrs, u32 cnt)"></a>shuffle_ptrs(void** ptrs, u32 cnt)</h2><p>作用是将一个数组里的指针顺序随机打乱</p>
+<h2 id="load-auto-void"><a href="#load-auto-void" class="headerlink" title="load_auto(void)"></a>load_auto(void)</h2><p>读如字典文件的一个wrapper，字典长度无误之后会进一步评估字典内容</p>
+<ul>
+<li>进入一个循环，循环次数为USE_AUTO_EXTRAS，即50次，定义在config.h中<ul>
+<li>获取字典路径，格式是这样alloc_printf(“%s&#x2F;.state&#x2F;auto_extras&#x2F;auto _%06u”, in_dir, i);</li>
+<li>open文件，将文件读如tmp中，同时保存每次读完文件后的长度，记为len</li>
+<li>长度如果满足(len &gt;&#x3D; MIN_AUTO_EXTRA &amp;&amp; len &lt;&#x3D; MAX_AUTO_EXTRA)<ul>
+<li>调用maybe_add_auto(tmp, len);</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="maybe-add-auto-u8-mem-u32-len"><a href="#maybe-add-auto-u8-mem-u32-len" class="headerlink" title="maybe_add_auto(u8* mem, u32 len)"></a>maybe_add_auto(u8* mem, u32 len)</h2><p>该函数主要是评估该字典是否可以为一个有效的字典</p>
+<p>一些预定义的边界值</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> s8  interesting_8[]  = &#123; INTERESTING_8 &#125;;<br><span class="hljs-type">static</span> s16 interesting_16[] = &#123; INTERESTING_8, INTERESTING_16 &#125;;<br><span class="hljs-type">static</span> s32 interesting_32[] = &#123; INTERESTING_8, INTERESTING_16, INTERESTING_32 &#125;;<br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INTERESTING_8 \</span><br><span class="hljs-meta">  -128,          <span class="hljs-comment">/* Overflow signed 8-bit when decremented  */</span> \</span><br><span class="hljs-meta">  -1,            <span class="hljs-comment">/*                                         */</span> \</span><br><span class="hljs-meta">   0,            <span class="hljs-comment">/*                                         */</span> \</span><br><span class="hljs-meta">   1,            <span class="hljs-comment">/*                                         */</span> \</span><br><span class="hljs-meta">   16,           <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   32,           <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   64,           <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   100,          <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   127           <span class="hljs-comment">/* Overflow signed 8-bit when incremented  */</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INTERESTING_16 \</span><br><span class="hljs-meta">  -32768,        <span class="hljs-comment">/* Overflow signed 16-bit when decremented */</span> \</span><br><span class="hljs-meta">  -129,          <span class="hljs-comment">/* Overflow signed 8-bit                   */</span> \</span><br><span class="hljs-meta">   128,          <span class="hljs-comment">/* Overflow signed 8-bit                   */</span> \</span><br><span class="hljs-meta">   255,          <span class="hljs-comment">/* Overflow unsig 8-bit when incremented   */</span> \</span><br><span class="hljs-meta">   256,          <span class="hljs-comment">/* Overflow unsig 8-bit                    */</span> \</span><br><span class="hljs-meta">   512,          <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   1000,         <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   1024,         <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   4096,         <span class="hljs-comment">/* One-off with common buffer size         */</span> \</span><br><span class="hljs-meta">   32767         <span class="hljs-comment">/* Overflow signed 16-bit when incremented */</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INTERESTING_32 \</span><br><span class="hljs-meta">  -2147483648LL, <span class="hljs-comment">/* Overflow signed 32-bit when decremented */</span> \</span><br><span class="hljs-meta">  -100663046,    <span class="hljs-comment">/* Large negative number (endian-agnostic) */</span> \</span><br><span class="hljs-meta">  -32769,        <span class="hljs-comment">/* Overflow signed 16-bit                  */</span> \</span><br><span class="hljs-meta">   32768,        <span class="hljs-comment">/* Overflow signed 16-bit                  */</span> \</span><br><span class="hljs-meta">   65535,        <span class="hljs-comment">/* Overflow unsig 16-bit when incremented  */</span> \</span><br><span class="hljs-meta">   65536,        <span class="hljs-comment">/* Overflow unsig 16 bit                   */</span> \</span><br><span class="hljs-meta">   100663045,    <span class="hljs-comment">/* Large positive number (endian-agnostic) */</span> \</span><br><span class="hljs-meta">   2147483647    <span class="hljs-comment">/* Overflow signed 32-bit when incremented */</span></span><br></code></pre></td></tr></table></figure>
+
+
+<p>字典的结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">extra_data</span> &#123;</span><br>  u8* data;                           <span class="hljs-comment">/* Dictionary token data            */</span><br>  u32 len;                            <span class="hljs-comment">/* Dictionary token length          */</span><br>  u32 hit_cnt;                        <span class="hljs-comment">/* Use count in the corpus          */</span><br>&#125;;<br><br><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">extra_data</span>* <span class="hljs-title">extras</span>;</span>     <span class="hljs-comment">/* Extra tokens to fuzz with        */</span><br><span class="hljs-type">static</span> u32 extras_cnt;                <span class="hljs-comment">/* Total number of tokens read      */</span><br><br><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">extra_data</span>* <span class="hljs-title">a_extras</span>;</span>   <span class="hljs-comment">/* Automatically selected extras    */</span><br><span class="hljs-type">static</span> u32 a_extras_cnt;              <span class="hljs-comment">/* Total number of tokens available */</span><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>if(!MAX_AUTO_EXTRAS || !USE_AUTO_EXTRAS)<ul>
+<li>则return</li>
+</ul>
+</li>
+<li>如果字典内容是<strong>完全重复的字符串</strong>或内容与<strong>interesting_16&#x2F;interesting_32</strong>存在相同的内容<ul>
+<li>return</li>
+</ul>
+</li>
+<li>接着从extras数组中找出第一个待评估字典长度相等的项，判断内容是否一致，<ul>
+<li>一致则return</li>
+</ul>
+</li>
+<li>设置auto_changed&#x3D;1</li>
+<li>遍历a_extras，找到第一个与len相等且内容完全一致的<ul>
+<li>a_extras[i].hit_cnt++;</li>
+<li>同时goto排序a_extras的逻辑</li>
+</ul>
+</li>
+<li>如果此时的a_extras_cnt小于MAX_AUTO_EXTRAS<ul>
+<li>那么将当前的mem，添加为a_extras新表项，也就是新的字典</li>
+</ul>
+</li>
+<li>如果此时的a_extras_cnt大于MAX_AUTO_EXTRAS<ul>
+<li>此时会随机淘汰一个位于MAX_AUTO_EXTRAS &#x2F; 2之后的，也就是hit频率较低的字典，并使用当前的字典替代</li>
+</ul>
+</li>
+<li>这里是排序a_extras的逻辑<ul>
+<li>首先按照hit_cnt大小，从高到低拍，也就是按照hit频率排序</li>
+<li>接着按照长度从短到长排序</li>
+</ul>
+</li>
+</ul>
+<h2 id="pivot-inputs-void"><a href="#pivot-inputs-void" class="headerlink" title="pivot_inputs(void)"></a>pivot_inputs(void)</h2><p>初始化一些值，还有一个prefix</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c">  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">queue_entry</span>* <span class="hljs-title">q</span> =</span> <span class="hljs-built_in">queue</span>;<br>  u32 id = <span class="hljs-number">0</span>;<br>  <br><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> SIMPLE_FILES</span><br><span class="hljs-meta">#  <span class="hljs-keyword">define</span> CASE_PREFIX <span class="hljs-string">&quot;id:&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br><span class="hljs-meta">#  <span class="hljs-keyword">define</span> CASE_PREFIX <span class="hljs-string">&quot;id_&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* ^!SIMPLE_FILES */</span></span><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>进入一个循环<ul>
+<li>获取当前q对应的文件名，赋值给rsl，后续通过操作去掉文件名开头的’&#x2F;‘</li>
+<li>如果满足(!strncmp(rsl, CASE_PREFIX, 3) &amp;&amp; sscanf(rsl + 3, “%06u”, &amp;orig_id) &#x3D;&#x3D; 1 &amp;&amp; orig_id &#x3D;&#x3D; id)<ul>
+<li>设置resuming_fuzz &#x3D; 1;</li>
+<li>分配一个路径alloc_printf(“%s&#x2F;queue&#x2F;%s”, out_dir, rsl);，赋值给nfn</li>
+<li>调用strchr(rsl + 3, ‘:’)，赋值给src_str</li>
+<li>如果满足(src_str &amp;&amp; sscanf(src_str + 1, “%06u”, &amp;src_id) &#x3D;&#x3D; 1)<ul>
+<li>接着通过src_id遍历到queue，得到s，此时的s就是父级queue</li>
+<li>接着将其变异的深度+1</li>
+<li>如果s的深度+1之后大于max_depth，则更新max_depth</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果不满足(!strncmp(rsl, CASE_PREFIX, 3) &amp;&amp; sscanf(rsl + 3, “%06u”, &amp;orig_id) &#x3D;&#x3D; 1 &amp;&amp; orig_id &#x3D;&#x3D; id)<ul>
+<li>定义了SIMPLE_FILES<ul>
+<li>执行strstr(rsl, “,orig:”)，返回值赋值给use_name，接着操作获得:之后的实际内容，更新use_name的值</li>
+<li>分配路径alloc_printf(“%s&#x2F;queue&#x2F;id:%06u,orig:%s”, out_dir, id, use_name)，赋值给nfn</li>
+</ul>
+</li>
+<li>没定义SIMPLE_FILES<ul>
+<li>直接分配alloc_printf(“%s&#x2F;queue&#x2F;id_%06u”, out_dir, id)，赋值给nfn</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>link_or_copy(q-&gt;fname, nfn);<ul>
+<li>创建一个硬连接，将q-&gt;fname硬连接到nfn</li>
+<li>如果失败则创建文件，并将q-&gt;fname的内容写入到nfn对应的文件中</li>
+</ul>
+</li>
+<li>更新q-&gt;fname &#x3D; nfn</li>
+<li>如果当前q为确定性变异<ul>
+<li>mark_as_det_done(q);<ul>
+<li>获取当前的文件名，strrchr(q-&gt;fname, ‘&#x2F;‘)，赋值给fn</li>
+<li>更新fn为alloc_printf(“%s&#x2F;queue&#x2F;.state&#x2F;deterministic_done&#x2F;%s”, out_dir, fn + 1)</li>
+<li>创建这个文件，设置q-&gt;passed_det &#x3D; 1;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>q &#x3D; q-&gt;next;id++;</li>
+</ul>
+</li>
+<li>如果设置了in_place_resume<ul>
+<li>nuke_resume_dir();<ul>
+<li>删除out_dir&#x2F;_ resume&#x2F;.state&#x2F;deterministic_done</li>
+<li>删除out_dir&#x2F;_ resume&#x2F;.state&#x2F;auto_extras</li>
+<li>删除out_dir&#x2F;_ resume&#x2F;.state&#x2F;redundant_edges</li>
+<li>删除out_dir&#x2F;_ resume&#x2F;.state&#x2F;variable_behavior</li>
+<li>删除out_dir&#x2F;_ resume&#x2F;.state</li>
+<li>删除out_dir&#x2F;_ resume</li>
+<li>如果删除失败，则fatal</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="load-extras-u8-dir"><a href="#load-extras-u8-dir" class="headerlink" title="load_extras(u8* dir)"></a>load_extras(u8* dir)</h2><p>如果使用了-x参数指定了字典的话，载入字典</p>
+<h2 id="find-timeout-void"><a href="#find-timeout-void" class="headerlink" title="find_timeout(void)"></a>find_timeout(void)</h2><p>读取fuzzer_stats文件里与exec_timeout相关的参数，通过文件中匹配exec_timeout的特征，获取偏移，然后atoi读exec_timeout的具体值</p>
+<ul>
+<li>如果没有定义resuming_fuzz，则rerutrn</li>
+<li>如果定义了in_place_resume &#x3D; 1，fn &#x3D; alloc_printf(“%s&#x2F;fuzzer_stats”, out_dir)，反之fn &#x3D; alloc_printf(“%s&#x2F;..&#x2F;fuzzer_stats”, in_dir);</li>
+<li>接着open fn，然后匹配字符串”exec_timeout      : “，将:后面的值转化为int，然后赋值给exec_tmout，并同时设置timeout_given &#x3D; 3;</li>
+</ul>
+<h2 id="detect-file-args-char-argv"><a href="#detect-file-args-char-argv" class="headerlink" title="detect_file_args(char** argv)"></a>detect_file_args(char** argv)</h2><p>查找是否存在@@占位符，如果存在则替换为out_dir&#x2F;.cur_input</p>
+<ul>
+<li>获取当前执行的AFl根目录的绝对路径，赋值给cwd</li>
+<li>获取strstr(argv[i], “@@”)，赋值给aa_loc</li>
+<li>如果aa_loc存在<ul>
+<li>如果没有指定out_file<ul>
+<li>那么out_file &#x3D; alloc_printf(“%s&#x2F;.cur_input”, out_dir);</li>
+</ul>
+</li>
+<li>如果指定了，当时不是绝对路径的话<ul>
+<li>aa_subst &#x3D; alloc_printf(“%s&#x2F;%s”, cwd, out_file);</li>
+</ul>
+</li>
+<li>如果指定了，且路径为绝对路径<ul>
+<li>aa_subst &#x3D; out_file;</li>
+</ul>
+</li>
+<li>最后会将@@替换为$cwd&#x2F;out_dir&#x2F;.cur_input</li>
+</ul>
+</li>
+</ul>
+<h2 id="setup-stdio-file-void"><a href="#setup-stdio-file-void" class="headerlink" title="setup_stdio_file(void)"></a>setup_stdio_file(void)</h2><p>针对于没有指定outfile，且也不存在@@的情况。先unlink掉同名的文件out_dir&#x2F;.cur_input，然后创建outdir&#x2F;.cur_input文件，同时文件描述符由out_fd保存</p>
+<h2 id="check-binary-u8-fname"><a href="#check-binary-u8-fname" class="headerlink" title="check_binary(u8* fname)"></a>check_binary(u8* fname)</h2><p>检查最后指定的，需要插桩的binary是否存在，还会去检查ELF header这类</p>
+<h2 id="perform-dry-run-char-argv"><a href="#perform-dry-run-char-argv" class="headerlink" title="perform_dry_run(char** argv)"></a>perform_dry_run(char** argv)</h2><p>遍历queue中的case，将case读到内存里，然后进入calibrate_case判断这个case是否有问题</p>
+<p>根据calibrate_case函数执行的返回结果，会分为几种情况，根据这几种情况会有一个判断，然后一直判断，直到程序fault或者case全部判断完毕</p>
+<p>最后会有一个case的质量检查，如果fail的次数和queued_paths相等，那么会直接fault；fail的占比高于百分之20，那么会发出警告</p>
+<p>涉及到的枚举值</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">enum</span> &#123;</span><br>  <span class="hljs-comment">/* 00 */</span> FAULT_NONE,<br>  <span class="hljs-comment">/* 01 */</span> FAULT_TMOUT,<br>  <span class="hljs-comment">/* 02 */</span> FAULT_CRASH,<br>  <span class="hljs-comment">/* 03 */</span> FAULT_ERROR,<br>  <span class="hljs-comment">/* 04 */</span> FAULT_NOINST,<br>  <span class="hljs-comment">/* 05 */</span> FAULT_NOBITS<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+<p>初始话一些变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">queue_entry</span>* <span class="hljs-title">q</span> =</span> <span class="hljs-built_in">queue</span>;<br>u32 cal_failures = <span class="hljs-number">0</span>;<br>u8* skip_crashes = getenv(<span class="hljs-string">&quot;AFL_SKIP_CRASHES&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>进入循环<ul>
+<li>获取q的filename，赋值给fn，接着open，然后将内容写到use_mem中，use_mem就是需要评估的样本内容</li>
+<li>调用res &#x3D; calibrate_case(argv, q, use_mem, 0, 1)，其中res是返回结果，状态见上方的枚举值</li>
+<li>接着进入一个switch<ul>
+<li>res&#x3D;&#x3D;FAULT_NONE<ul>
+<li>如果是q &#x3D;&#x3D; queue，那么也就是第一次执行，会调用check_map_coverage()</li>
+<li>如果满足crash_mode≠0，会fatal</li>
+</ul>
+</li>
+<li>res&#x3D;&#x3D;FAULT_TMOUT<ul>
+<li>如果手动设定了timeout<ul>
+<li>如果是宽松模式，也即是timeout具体值后面多了一个’+’<ul>
+<li>设置当前样本的call_failed，q-&gt;cal_failed &#x3D; CAL_CHANCES;</li>
+<li>cal_failures++</li>
+</ul>
+</li>
+<li>如果是严格模式<ul>
+<li>输出一些信息，然后fatal</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果没有手动设定timeout<ul>
+<li>输出一些信息，然后fatal</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>res&#x3D;&#x3D;FAULT_CRASH<ul>
+<li>如果设置了crash_mode<ul>
+<li>break</li>
+</ul>
+</li>
+<li>如果设置了skip_crashes<ul>
+<li>设置当前样本的call_failed，q-&gt;cal_failed &#x3D; CAL_CHANCES;</li>
+<li>cal_failures++</li>
+</ul>
+</li>
+<li>接着针对是否设置了mem_limit，产生一些针对性的输出</li>
+<li>fatal</li>
+</ul>
+</li>
+<li>res&#x3D;&#x3D;FAULT_ERROR<ul>
+<li>fatal</li>
+</ul>
+</li>
+<li>res&#x3D;&#x3D;FAULT_ERROR<ul>
+<li>fatal，因为没有插桩</li>
+</ul>
+</li>
+<li>res&#x3D;&#x3D;FAULT_NOBITS<ul>
+<li>useless_at_start++</li>
+<li>如果满足(!in_bitmap &amp;&amp; !shuffle_queue)，会输出”No new instrumentation output, test case may be useless.”</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果满足q-&gt;var_behavior≠0，输出”Instrumentation output varies across runs.”</li>
+<li>q &#x3D; q-&gt;next;</li>
+</ul>
+</li>
+<li>如果cal_failures≠0<ul>
+<li>如果cal_failures的次数与queued_paths相等，说明样本执行全部失败了，则fatal</li>
+<li>cal_failures的比例，超过20%，则fatal</li>
+</ul>
+</li>
+</ul>
+<h2 id="calibrate-case-char-argv-struct-queue-entry-q-u8-use-mem-u32-handicap-u8-from-queue"><a href="#calibrate-case-char-argv-struct-queue-entry-q-u8-use-mem-u32-handicap-u8-from-queue" class="headerlink" title="calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,u32 handicap, u8 from_queue)"></a>calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,u32 handicap, u8 from_queue)</h2><p>初始化一系列变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u8 first_trace[MAP_SIZE];<br><br>u8  fault = <span class="hljs-number">0</span>, new_bits = <span class="hljs-number">0</span>, var_detected = <span class="hljs-number">0</span>, hnb = <span class="hljs-number">0</span>,<br>    first_run = (q-&gt;exec_cksum == <span class="hljs-number">0</span>);<br><br>u64 start_us, stop_us;<br><br>s32 old_sc = stage_cur, old_sm = stage_max;<br>u32 use_tmout = exec_tmout;<br>u8* old_sn = stage_name;<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>if (!from_queue || resuming_fuzz)<ul>
+<li>设置use_tmout</li>
+</ul>
+</li>
+<li>默认q-&gt;cal_failed++，认为是最坏的情况，样本执行失败</li>
+<li>设置stage_name &#x3D; “calibration”;</li>
+<li>stage_max  &#x3D; fast_cal ? 3 : CAL_CYCLES，这里的stage_max默认一开始是8，当开始第二轮的时候，往往会被设置成40，也就是一个样本正常执行的次数是40</li>
+<li>if (dumb_mode !&#x3D; 1 &amp;&amp; !no_forkserver &amp;&amp; !forksrv_pid)<ul>
+<li>init_forkserver(argv);初始化forkserver，其中forksrv_pid是反之重复初始化</li>
+</ul>
+</li>
+<li>如果当前样本的exec_cksum，那么说明这个样本不是第一次执行<ul>
+<li>将trace_bits内容拷贝到first_trace，其中的trace_bits是样本每一次执行后的路径情况</li>
+<li>调用has_new_bits(virgin_bits);判断是否产生了新的路径<ul>
+<li>返回0说明，没有新路径</li>
+<li>返回1说明，产生的路径没有大于一个字节，也就是路径变化不大</li>
+<li>返回2说明，产生的路径大于等于1个字节，路径变化很大</li>
+</ul>
+</li>
+<li>if (hnb &gt; new_bits) new_bits &#x3D; hnb;设置new_bits，用于后续判读该样本是否产生了新路径</li>
+</ul>
+</li>
+<li>获取开始时间，赋值给start_us</li>
+<li>进入for 循环，次数是stage_max<ul>
+<li>if (!first_run &amp;&amp; !(stage_cur % stats_update_freq))<ul>
+<li>会调用show_stats()，输出状态</li>
+</ul>
+</li>
+<li>接着调用write_to_testcase(use_mem, q-&gt;len)，将样本内容写到out_dir&#x2F;.cur_input中</li>
+<li>调用fault &#x3D; run_target(argv, use_tmout);</li>
+<li>满足if (stop_soon || fault !&#x3D; crash_mode)，也就是crtl c会退出，或者crahs_mode对不上<ul>
+<li>goto abort_calibration;</li>
+</ul>
+</li>
+<li>计算hash值，调用hash32(trace_bits, MAP_SIZE, HASH_CONST)，赋值给cksum</li>
+<li>如果当前执行样本的q-&gt;exec_cksum和cksum不等<ul>
+<li>判断virgin_bits的是否产生新路径</li>
+<li>如果q-&gt;exec_cksum存在，说明不是第一次执行的时候会进入下面的逻辑<ul>
+<li>进入循环<ul>
+<li>如果当前的trace_bits和first_trace不一致，说明可能发生了路径上的变化<ul>
+<li>设置var_bytes[i] &#x3D; 1;</li>
+<li>stage_max &#x3D; CAL_CYCLES_LONG，也就是延长了当前样本的执行次数</li>
+</ul>
+</li>
+<li>设置var_detected &#x3D; 1，说明执行了这个样本，发生了变化</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果q-&gt;exec_cksum不存在<ul>
+<li>q-&gt;exec_cksum &#x3D; cksum;</li>
+<li>将trace_bits内容拷贝到first_trace</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取结束时间，赋值给stop_us</li>
+<li>计算一下执行时间和执行轮数，分别赋值给total_cal_us和total_cal_cycles</li>
+<li>进行样本信息的赋值<ul>
+<li>q-&gt;exec_us&#x3D;执行时间&#x2F;执行轮数，q-&gt;bitmap_size &#x3D; count_bytes(trace_bits)，q-&gt;handicap    &#x3D; handicap，q-&gt;cal_failed  &#x3D; 0。也就是执行到这个地方说明样本并没有执行失败</li>
+<li>接着增加总的bitmap的大小和数量，对应逻辑是total_bitmap_size +&#x3D; q-&gt;bitmap_size;total_bitmap_entries++</li>
+</ul>
+</li>
+<li>执行update_bitmap_score(q);</li>
+<li>如果满足(!dumb_mode &amp;&amp; first_run &amp;&amp; !fault &amp;&amp; !new_bits)<ul>
+<li>fault &#x3D; FAULT_NOBITS，这种情况就是说样本正常执行，当时没有产生新的路径</li>
+</ul>
+</li>
+<li>进入abort_calibration标签<ul>
+<li>如果满足(new_bits &#x3D;&#x3D; 2 &amp;&amp; !q-&gt;has_new_cov)，说明产生了全新的覆盖率<ul>
+<li>设置q-&gt;has_new_cov &#x3D; 1;queued_with_cov++;</li>
+</ul>
+</li>
+<li>如果检测出了变化，也就是满足var_detected&#x3D;&#x3D;1<ul>
+<li>计算变化的数量var_byte_count &#x3D; count_bytes(var_bytes);</li>
+<li>如果满足(!q-&gt;var_behavior)<ul>
+<li>执行mark_as_variable(q);</li>
+<li>queued_variable++;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>最后是开头的一些变量的更新，和状态的输出</li>
+</ul>
+</li>
+<li>最后return fault</li>
+</ul>
+<h2 id="init-forkserver-char-argv"><a href="#init-forkserver-char-argv" class="headerlink" title="init_forkserver(char** argv)"></a>init_forkserver(char** argv)</h2><p>初始化基本的变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> FORKSRV_FD          198</span><br><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">itimerval</span> <span class="hljs-title">it</span>;</span><br><span class="hljs-type">int</span> st_pipe[<span class="hljs-number">2</span>], ctl_pipe[<span class="hljs-number">2</span>];<br><span class="hljs-type">int</span> status;<br>s32 rlen;<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>初始化管道pipe(st_pipe);pipe(ctl_pipe)</li>
+<li>执行forksrv_pid &#x3D; fork()，fork一个子进程，然后子进程pid赋值给forksrv_pid</li>
+<li>接着如果满足if (!forksrv_pid)，下面执行的逻辑是子进程执行的<ul>
+<li>设置当前进程的fd数量上限到200</li>
+<li>接着设置内存的上限</li>
+<li>执行setsid()，脱离终端控制，反之被挂起</li>
+<li>将stdout、stderr重定向到dev_null_fd</li>
+<li>如果定义了outfile<ul>
+<li>将stdin也重定向到dev_null_fd</li>
+</ul>
+</li>
+<li>将stdin重定向到out_fd，也就是将种子当成输入</li>
+<li>接着执行dup2(ctl_pipe[0], FORKSRV_FD);dup2(st_pipe[1], FORKSRV_FD + 1)<ul>
+<li>子进程通过198这个fd来读取来自父进程的信息，同时通过199这个fd来将信息传递给父进程</li>
+</ul>
+</li>
+<li>设置一系列的环境变量，最后执行execv(target_path, argv);<ul>
+<li>如果正常的话其实会跑到插桩的代码，后续与父进程交互，这个部分后面写</li>
+<li>如果失败的话，执行exit，退出</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>父进程这里也设置了fd<ul>
+<li>父进程通过198来将信息传递给子进程，同时通过199读取来自子进程的消息</li>
+</ul>
+</li>
+<li>设定一个超时的计时器<ul>
+<li>阻塞，直到可以读取来自子进程的消息rlen &#x3D; read(fsrv_st_fd, &amp;status, 4)，正常来说应该是hello</li>
+</ul>
+</li>
+<li>如果没有超时的话，这个计时器会被清空</li>
+<li>判断rlen的长度，等于4的话说明forkserver正常启动了。如果child_timed_out存在，说吗子进程执行超时。还存在waitpid(forksrv_pid, &amp;status, 0)判断子进程的返回状态是否正常。</li>
+<li>后续还有一些判断，不是特别重要，有时间再补吧</li>
+</ul>
+<h2 id="show-stats-void"><a href="#show-stats-void" class="headerlink" title="show_stats(void)"></a>show_stats(void)</h2><h2 id="has-new-bits-u8-virgin-map"><a href="#has-new-bits-u8-virgin-map" class="headerlink" title="has_new_bits(u8* virgin_map)"></a>has_new_bits(u8* virgin_map)</h2><p>根据机器字长，设置current和virgin，其中的 &gt;&gt;3&#x2F;2就是除以8&#x2F;4</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> WORD_SIZE_64</span><br><br>  u64* current = (u64*)trace_bits;<br>  u64* virgin  = (u64*)virgin_map;<br><br>  u32  i = (MAP_SIZE &gt;&gt; <span class="hljs-number">3</span>);<span class="hljs-comment">//0x2000</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br><br>  u32* current = (u32*)trace_bits;<br>  u32* virgin  = (u32*)virgin_map;<br><br>  u32  i = (MAP_SIZE &gt;&gt; <span class="hljs-number">2</span>);<span class="hljs-comment">//0x4000</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* ^WORD_SIZE_64 */</span></span><br><br>u8   ret = <span class="hljs-number">0</span>;<br><br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>进入while(i—)循环<ul>
+<li>当<em>current不为0且(</em> current &amp; *virgin)不为0的时候，说明发现了新路径，或者说某一条路径多执行了一次<ul>
+<li>ret&lt;2时<ul>
+<li>取单字节的current为cur，单字节的virgin为vir，每次判断的idx都是8个增长。也就是将八个字节拆封成8个单字节判断</li>
+<li>这里说个例子，判断如果cur[0] &amp;&amp; vir[0] &#x3D;&#x3D; 0xff为1那么说明产生了新路径，ret&#x3D;2。<strong>需要注意的是&#x3D;&#x3D;的优先级大于 &amp;&amp;，这里踩坑了</strong>。因为vir初始化就是0xff，所以&#x3D;&#x3D;0xff说明还没被执行到，因此cur[0]只要不为0，那么就会产生新路径</li>
+<li>如果不为1的话，那么ret&#x3D;1</li>
+<li>执行*virgin &amp;&#x3D; ~*current，这里讲current为1的bit的值取反，然后&amp;操作，这样就可以消除vir上的1位。例子看下面</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>current++;</li>
+<li>virgin++;</li>
+</ul>
+</li>
+<li>满足if (ret &amp;&amp; virgin_map &#x3D;&#x3D; virgin_bits)，需要注意的是fuzz时存在多个virgin，分别是virgin_bits、virgin_tmout和virgin_crash，这里的bitmap_changed针对于virgin_bits<ul>
+<li>设置bitmap_changed&#x3D;1</li>
+</ul>
+</li>
+<li>return ret;</li>
+</ul>
+<h2 id="write-to-testcase-void-mem-u32-len"><a href="#write-to-testcase-void-mem-u32-len" class="headerlink" title="write_to_testcase(void* mem, u32 len)"></a>write_to_testcase(void* mem, u32 len)</h2><p>如果out_file存在的话，将当前样本的内容，写到out_file中；如果不存在的话，通过out_fd写进去</p>
+<h2 id="run-target-char-argv-u32-timeout"><a href="#run-target-char-argv-u32-timeout" class="headerlink" title="run_target(char** argv, u32 timeout)"></a>run_target(char** argv, u32 timeout)</h2><p>初始化一些值</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">itimerval</span> <span class="hljs-title">it</span>;</span><br><span class="hljs-type">static</span> u32 prev_timed_out = <span class="hljs-number">0</span>;<br><span class="hljs-type">static</span> u64 exec_ms = <span class="hljs-number">0</span>;<br><br><span class="hljs-type">int</span> status = <span class="hljs-number">0</span>;<br>u32 tb4;<br><br>child_timed_out = <span class="hljs-number">0</span>;<br><br><span class="hljs-comment">/* After this memset, trace_bits[] are effectively volatile, so we</span><br><span class="hljs-comment">   must prevent any earlier operations from venturing into that</span><br><span class="hljs-comment">   territory. */</span><br><br><span class="hljs-built_in">memset</span>(trace_bits, <span class="hljs-number">0</span>, MAP_SIZE);<br></code></pre></td></tr></table></figure>
+
+
+<p><strong>如果是dumb_mode或者no_forkserver，这个情况我不讨论，后续有时间再续</strong></p>
+<ul>
+<li>如果是正常的forkserver模式<ul>
+<li>首先父进程向fsrv_ctl_fd管道写入上一次程序执行的状态，其中prev_timed_out&#x3D;0代表上一次执行没有超时。</li>
+<li>阻塞进程，等待forkserver向fsrv_st_fd管道写入child_pid，父进程等待读取</li>
+<li>如果child_pid&lt;0，则fatal</li>
+</ul>
+</li>
+<li>根据传入的timeout参数，设置计时器</li>
+<li>父进程等待从fsrv_st_fd管道读如forkserver子进程执行状态</li>
+<li>如果子进程已经退出或者死亡，则child_pid&#x3D;0</li>
+<li>通过timer计算出子进程执行的时间exec_ms，接着清空timer，total_execs++;</li>
+<li>根据word_size，调用classify_counts((u64 <em>)trace_bits)或者classify_counts((u32</em>)trace_bits);</li>
+<li>由于fuzz启动之前重新写过信号，所以当超时的时候会讲child_timed_out赋值为1，并kill(child_pid, SIGKILL)，因此这里当timer重置之后，会讲这个child_timed_out的结果赋值给prev_timed_out，那么下一次执行的时候这个结果就会被反馈给forkserver了</li>
+<li>根据forkserver传递的status来判断返回值类型<ul>
+<li>WIFSIGNALED(status)当这个为真时，也就是子进程异常退出，通过调用WTERMSIG(status)获得子进程结束之前的signal，赋值给kill_signal<ul>
+<li>如果child_timed_out&#x3D;1且kill_signal &#x3D;&#x3D; SIGKILL，也就是超时导致了异常退出，那么return FAULT_TMOUT</li>
+<li>如果没有超时，那么就意味着crash，所以return FAULT_CRASH;</li>
+</ul>
+</li>
+<li>如果使用了asan，且WEXITSTATUS(status) &#x3D;&#x3D; MSAN_ERROR检测到了使用未初始化的内存<ul>
+<li>kill_signal &#x3D; 0</li>
+<li>return FAULT_CRASH;</li>
+</ul>
+</li>
+<li>如果满足这个条件(!(timeout &gt; exec_tmout) &amp;&amp; (slowest_exec_ms &lt; exec_ms))<ul>
+<li>这里是统计执行的最慢时间，所以会执行slowest_exec_ms &#x3D; exec_ms</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>return FAULT_NONE;</li>
+</ul>
+<h2 id="classify-counts-u64-mem"><a href="#classify-counts-u64-mem" class="headerlink" title="classify_counts(u64* mem)"></a>classify_counts(u64* mem)</h2><ul>
+<li>遍历完mem<ul>
+<li>八个字节为一次，一次分为4组，每组两个bytes，通过调用count_class_lookup16[mem16[i]]来检索count_class_lookup16数组中对应的值，然后再填回mem16[i]</li>
+</ul>
+</li>
+</ul>
+<h2 id="count-bytes-u8-mem"><a href="#count-bytes-u8-mem" class="headerlink" title="count_bytes(u8* mem)"></a>count_bytes(u8* mem)</h2><ul>
+<li>遍历完mem<ul>
+<li>四个字节为一次，一次分为4组，每组一个字节，讲每一个字节都&amp;0xff，值如果不为0的话，则ret++</li>
+</ul>
+</li>
+<li>return ret;</li>
+</ul>
+<h2 id="update-bitmap-score-struct-queue-entry-q"><a href="#update-bitmap-score-struct-queue-entry-q" class="headerlink" title="update_bitmap_score(struct queue_entry* q)"></a>update_bitmap_score(struct queue_entry* q)</h2><p>初始化变量，这个fav_factor就是后面判断进入top_rated[i]的依据，执行时间*文件长度</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">u32 i;<br>u64 fav_factor = q-&gt;exec_us * q-&gt;len;<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>进入for循环，执行MAP_SIZE次数<ul>
+<li>如果当前idx的trace_bits[idx]存在<ul>
+<li>如果top_rated[i]不为空<ul>
+<li>如果当前的fav_factor&gt;top_rated[i]的fav_factor，那么continue，说明这个无法加入</li>
+<li>如果满足(!–top_rated[i]-&gt;tc_ref)，即top_rated[i]-&gt;tc_ref&#x3D;1，也就是之前是添加到top_rated数组里的，且目前q的fav_factor&lt;top_rated[i]的fav_factor<ul>
+<li>释放掉原本top_rated[i]-&gt;trace_mini，并清空，后续会为这个新的q分配trace_mini</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>直接把当前的case放到这个数组，top_rated[i] &#x3D; q</li>
+<li>q-&gt;tc_ref++;</li>
+<li>如果当前的q不存在trace_mini的话<ul>
+<li>先分配对应的内存，然后调用minimize_bits(q-&gt;trace_mini, trace_bits)，讲trace_bits压缩到q-&gt;trace_mini</li>
+</ul>
+</li>
+<li>设置score_changed &#x3D; 1;</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="minimize-bits-u8-dst-u8-src"><a href="#minimize-bits-u8-dst-u8-src" class="headerlink" title="minimize_bits(u8* dst, u8* src)"></a>minimize_bits(u8* dst, u8* src)</h2><p>代码量很少，其实用到一个压缩的算法</p>
+<p>这里就是把src里的单个字节映射到dst到bit，因此缩小了8倍的大小。下面的逻辑就是如果*src存在的话，就讲dst中对应bit位赋值为1</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c">u32 i = <span class="hljs-number">0</span>;<br><br><span class="hljs-keyword">while</span> (i &lt; MAP_SIZE) &#123;<br><br>  <span class="hljs-keyword">if</span> (*(src++)) dst[i &gt;&gt; <span class="hljs-number">3</span>] |= <span class="hljs-number">1</span> &lt;&lt; (i &amp; <span class="hljs-number">7</span>);<br>  i++;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="mark-as-variable-struct-queue-entry-q"><a href="#mark-as-variable-struct-queue-entry-q" class="headerlink" title="mark_as_variable(struct queue_entry* q)"></a>mark_as_variable(struct queue_entry* q)</h2><p>创建out_dir&#x2F;queue&#x2F;.state&#x2F;variable_behavior&#x2F;fname的符号链接，同时设置q-&gt;var_behavior &#x3D; 1;</p>
+<h2 id="cull-queue-void"><a href="#cull-queue-void" class="headerlink" title="cull_queue(void)"></a>cull_queue(void)</h2><p>基本值的初始化</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">queue_entry</span>* <span class="hljs-title">q</span>;</span><br><span class="hljs-type">static</span> u8 temp_v[MAP_SIZE &gt;&gt; <span class="hljs-number">3</span>];<br>u32 i;<br><br><span class="hljs-keyword">if</span> (dumb_mode || !score_changed) <span class="hljs-keyword">return</span>;<br><br>score_changed = <span class="hljs-number">0</span>;<br><br><span class="hljs-built_in">memset</span>(temp_v, <span class="hljs-number">255</span>, MAP_SIZE &gt;&gt; <span class="hljs-number">3</span>);<br><br>queued_favored  = <span class="hljs-number">0</span>;<br>pending_favored = <span class="hljs-number">0</span>;<br><br>q = <span class="hljs-built_in">queue</span>;<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>循环遍历queue，将q-&gt;favored &#x3D; 0都设置成0</li>
+<li>进入循环，执行次数是MAP_SIZE<ul>
+<li>如果当前的top_rated[i]存在，且(temp_v[i &gt;&gt; 3] &amp; (1 &lt;&lt; (i &amp; 7)))不为0<ul>
+<li>j &#x3D; MAP_SIZE &gt;&gt; 3;</li>
+<li>进入while (j–)循环<ul>
+<li>如果top_rated[i]-&gt;trace_mini[j]存在<ul>
+<li>执行temp_v[j] &amp;&#x3D; ~top_rated[i]-&gt;trace_mini[j]，意思就是说将trace_mini按位取反，然后与temp_v[j]进行&amp;运算，同时遍历了temp_v数组。循环执行完毕后，temp_v[j]中不存在当前top_rated[i]涉及到的路径</li>
+<li>当执行完毕所有的top_rated数组的时候，获得的temp_v[j]是一个不包含所有样本路径的最小子集（但这个没用）。同时由于这个判断的存在(temp_v[i &gt;&gt; 3] &amp; (1 &lt;&lt; (i &amp; 7)))，所以这里就是一个<strong>top_rated数组去重的过程</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>top_rated[i]-&gt;favored &#x3D; 1;</li>
+<li>然后queued_favored++;</li>
+<li>top_rated[i]-&gt;was_fuzzed，意思是当前样本如果没有被fuzz过，fuzz的数量会变+1<ul>
+<li>pending_favored++;</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>设置q&#x3D;queue，也就是到队列开头</li>
+<li>while (q)<ul>
+<li>遍历执行mark_as_redundant(q, !q-&gt;favored);</li>
+</ul>
+</li>
+</ul>
+<h2 id="mark-as-redundant-struct-queue-entry-q-u8-state"><a href="#mark-as-redundant-struct-queue-entry-q-u8-state" class="headerlink" title="mark_as_redundant(struct queue_entry* q, u8 state)"></a>mark_as_redundant(struct queue_entry* q, u8 state)</h2><ul>
+<li>如果state 和q-&gt;fs_redundant相等，就return</li>
+<li>q-&gt;fs_redundant &#x3D; state;</li>
+<li>为fn分配路径为out_dir&#x2F;queue&#x2F;.state&#x2F;redundant_edges&#x2F;fname</li>
+<li>如果state为1，也就是redundant的情况<ul>
+<li>创建这个fn路径的文件</li>
+</ul>
+</li>
+<li>如果state为0，也就是属于favored的情况<ul>
+<li>删除这个fn路径的文件</li>
+</ul>
+</li>
+</ul>
+<h2 id="show-init-stats"><a href="#show-init-stats" class="headerlink" title="show_init_stats"></a>show_init_stats</h2><h2 id="find-start-position-void"><a href="#find-start-position-void" class="headerlink" title="find_start_position(void)"></a>find_start_position(void)</h2><p>针对于开启了resuming_fuzz的情况，为了获取上一次执行样本的位置</p>
+<ul>
+<li>如果resuming_fuzz为0，则return</li>
+<li>如果in_place_resume&#x3D;1<ul>
+<li>fn为out_dir&#x2F;fuzzer_stats</li>
+</ul>
+</li>
+<li>如果in_place_resume&#x3D;0<ul>
+<li>fn为in_dir&#x2F;..&#x2F;fuzzer_stats</li>
+</ul>
+</li>
+<li>打开这个文件，将内容读到tmp里，接着匹配”cur_path          : “字符在这文件内的偏移，然后将”:”后的值转化为int，赋值给ret，最后return ret</li>
+<li>这个返回值会赋值给seek_to</li>
+</ul>
+<h2 id="write-stats-file-double-bitmap-cvg-double-stability-double-eps"><a href="#write-stats-file-double-bitmap-cvg-double-stability-double-eps" class="headerlink" title="write_stats_file(double bitmap_cvg, double stability, double eps)"></a>write_stats_file(double bitmap_cvg, double stability, double eps)</h2><h2 id="save-auto-void"><a href="#save-auto-void" class="headerlink" title="save_auto(void)"></a>save_auto(void)</h2><p>将自动生成的一些字典保存到out_dir下面</p>
+<ul>
+<li>如果auto_changed&#x3D;0，则return</li>
+<li>设置auto_changed&#x3D;0</li>
+<li>for循环，次数是MIN(USE_AUTO_EXTRAS, a_extras_cnt)<ul>
+<li>获取fn路径，为alloc_printf(“%s&#x2F;queue&#x2F;.state&#x2F;auto_extras&#x2F;auto _%06u”, out_dir, i);</li>
+<li>打开这个文件，将a_extras数组的内容写入</li>
+</ul>
+</li>
+</ul>
+<h2 id="fuzz执行的流程"><a href="#fuzz执行的流程" class="headerlink" title="fuzz执行的流程"></a>fuzz执行的流程</h2><ul>
+<li>进入循环while (1)<ul>
+<li>定义skipped_fuzz</li>
+<li>执行cull_queue()精简top_rated数组</li>
+<li>如果queue_cur为空的话，其实也就是对应着初始fuzz开始状态<ul>
+<li>queue_cycle++;</li>
+<li>current_entry     &#x3D; 0;</li>
+<li>cur_skipped_paths &#x3D; 0;</li>
+<li>queue_cur         &#x3D; queue;</li>
+<li>while (seek_to)&#x20;<ul>
+<li>通过seek_to来找到之前fuzz的queue</li>
+</ul>
+</li>
+<li>执行函数show_stats，打印状态</li>
+<li>如果queued_paths于prev_queued相等<ul>
+<li>同时采用字符拼接的策略的话<ul>
+<li>cycles_wo_finds++</li>
+</ul>
+</li>
+<li>否则use_splicing &#x3D; 1，开启字符拼接</li>
+</ul>
+</li>
+<li>否则cycles_wo_finds &#x3D; 0</li>
+<li>如果是第一轮执行，同时是M&#x2F;S模式，并且存在环境变量AFL_IMPORT_FIRST<ul>
+<li>执行sync_fuzzers(use_argv);</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>执行fuzz_one(use_argv)，返回值赋值给skipped_fuzz</li>
+<li>对于没有停止、处于M&#x2F;S模式并且没有被fuzz的样本<ul>
+<li>如果满足(!(sync_interval_cnt++ % SYNC_INTERVAL))<ul>
+<li>执行sync_fuzzers(use_argv);</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>执行queue_cur &#x3D; queue_cur-&gt;next;current_entry++，下一个样本和数量++</li>
+</ul>
+</li>
+</ul>
+<h2 id="sync-fuzzers-char-argv"><a href="#sync-fuzzers-char-argv" class="headerlink" title="sync_fuzzers(char** argv)"></a>sync_fuzzers(char** argv)</h2><p>作用其实是在开启了M&#x2F;S的情况下，同步不同sync_id目录下的样本</p>
+<p>初始化一些变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">DIR* sd;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dirent</span>* <span class="hljs-title">sd_ent</span>;</span><br>u32 sync_cnt = <span class="hljs-number">0</span>;<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>执行sd &#x3D; opendir(sync_dir);</li>
+<li>进入循环while ((sd_ent &#x3D; readdir(sd)))，是遍历sync_dir目录下的所有内容<ul>
+<li>如果此时的遍历项是”.”开头或者等于当前的sync_id，说明是隐藏文件或者自己的fuzz目录，因此执行continue跳过</li>
+<li>接着qd_path&#x3D;”sync_dir&#x2F;sd_ent-&gt;d_name&#x2F;queue”，也就是获取到其他sync_id&#x2F;queue目录下的路径</li>
+<li>调用qd &#x3D; opendir(qd_path)，获取内容。同时也是判断当前的目录下是否存在queue，如果不存在的话，说明这个不是另外sync_id的目录，因为目录下还可能存在.cur_input、fuzz_bitmap、fuzzer_stats等等</li>
+<li>qd_synced_path&#x3D;”out_dir&#x2F;.synced&#x2F;sd_ent-&gt;d_name”，到了这里也就是说已经获取了其他并行fuzzer的样本目录了，然后这里是获取，为了后续创建.synced的目录</li>
+<li>id_fd &#x3D; open(qd_synced_path, O_RDWR | O_CREAT, 0600)，创建文件</li>
+<li>将当前的文件内容读到min_accept，然后赋值next_min_accept &#x3D; min_accept;</li>
+<li>执行sprintf(stage_tmp, “sync %u”, ++sync_cnt);</li>
+<li>进入循环while ((qd_ent &#x3D; readdir(qd)))<ul>
+<li>如果当前遍历到的项是隐藏文件，或者格式不满足类似于这种”id:000000,orig:seed”，或者当前获取到的syncing_case&lt;next_min_accept，说明当前同步的样本重复了，所以continue</li>
+<li>如果syncing_case &gt;&#x3D; next_min_accept，则next_min_accept &#x3D; syncing_case + 1;</li>
+<li>分配path&#x3D;”qd_path&#x2F;qd_ent-&gt;d_name”，然后fd &#x3D; open(path, O_RDONLY);</li>
+<li>接着调用mmap将当前文件内容映射到内存，然后将内容写到.cur_input中，调用run_target跑下这个case，保存执行完毕该样本的状态，用于后续判断是否可以被保存为interesting case</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="暂时搁置分析的函数"><a href="#暂时搁置分析的函数" class="headerlink" title="暂时搁置分析的函数"></a>暂时搁置分析的函数</h2><h3 id="fuzz-one-char-argv"><a href="#fuzz-one-char-argv" class="headerlink" title="fuzz_one(char** argv)"></a>fuzz_one(char** argv)</h3><ul>
+<li>如果当前样本的变异深度≥1则return 1，说明此时的这个样本已经被fuzz过了</li>
+<li>如果pending_favored不为0，则说明top_rated数组里还存在样本没fuzz<ul>
+<li>如果当前样本被fuzz过了，或者当前样本并不是favored。同时UR(100) &lt; SKIP_TO_NEW_PROB满足，则return 1。前方的SKIP_TO_NEW_PROB为99，也就是对于被fuzz过的样本，且不是favored的样本，有%99的概率直接返回</li>
+</ul>
+</li>
+<li>如果pending_favored为0<ul>
+<li>如果不是dumb_mode且当前样本不是favored且queued_paths大于10<ul>
+<li>如果不是第一轮，且当前样本没有被fuzz过<ul>
+<li>%75的概率reutrn 1</li>
+</ul>
+</li>
+<li>如果是第一轮或者被fuzz过了<ul>
+<li>%95概率直接return 1</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取当前样本的内容，调用mmap映射到内存，分别赋值给orig_in 和in_buf，同时获取样本内容的长度，赋值为len</li>
+<li>如果当前的样本执行失败过<ul>
+<li>如果次数&lt;3,那么会给重新执行的机会，然后判断返回状态，如果还是FAULT_ERROR则fatal</li>
+<li>如果≥3，同时满足(stop_soon || res !&#x3D; crash_mode)的话，cur_skipped_paths++，然后goto abandon_entry;</li>
+</ul>
+</li>
+<li>如果不是dumb_mode，且当前的样本还没有被trim过<ul>
+<li>调用u8 res &#x3D; trim_case(argv, queue_cur, in_buf)，其实就是精简下样本</li>
+<li>如果是FAULT_ERROR，则fatal</li>
+<li>接着赋值queue_cur-&gt;trim_done &#x3D; 1</li>
+<li>更新queue_cur→len，更新out_buf</li>
+</ul>
+</li>
+<li>调用calculate_score(queue_cur)，为当前的样本评分，赋值给orig_perf和perf_score</li>
+<li>如果当前的样本不跳过确定性变异，或者没有被fuzz过，或者没有被设置过passed_det的标志位<ul>
+<li>goto havoc_stage，执行随机性变异</li>
+</ul>
+</li>
+<li>如果满足(master_max &amp;&amp; (queue_cur-&gt;exec_cksum % master_max) !&#x3D; master_id - 1)<ul>
+<li>goto havoc_stage，执行随机性变异</li>
+</ul>
+</li>
+<li>设置doing_det &#x3D; 1，执行到这里说明当前没发生过执行随机性变异，下方会先执行确定性变异，然后后续的变异流程以后再分析。。。。。（待填坑</li>
+</ul>
+<h3 id="样本的确定性变异-随机性变异-字符拼接"><a href="#样本的确定性变异-随机性变异-字符拼接" class="headerlink" title="样本的确定性变异&#x2F;随机性变异&#x2F;字符拼接"></a>样本的确定性变异&#x2F;随机性变异&#x2F;字符拼接</h3><p>由于写ast fuzz其实用不到，因为会破坏文法，所以这一部分暂时不分析，以后有需要再分析</p>
+<h3 id="trim-case-char-argv-struct-queue-entry-q-u8-in-buf"><a href="#trim-case-char-argv-struct-queue-entry-q-u8-in-buf" class="headerlink" title="trim_case(char** argv, struct queue_entry* q, u8* in_buf)"></a>trim_case(char** argv, struct queue_entry* q, u8* in_buf)</h3><h3 id="calculate-score-struct-queue-entry-q"><a href="#calculate-score-struct-queue-entry-q" class="headerlink" title="calculate_score(struct queue_entry* q)"></a>calculate_score(struct queue_entry* q)</h3><h3 id="common-fuzz-stuff-char-argv-u8-out-buf-u32-len"><a href="#common-fuzz-stuff-char-argv-u8-out-buf-u32-len" class="headerlink" title="common_fuzz_stuff(char** argv, u8* out_buf, u32 len)"></a>common_fuzz_stuff(char** argv, u8* out_buf, u32 len)</h3><h1 id="fuzzer与forkserver间的通信"><a href="#fuzzer与forkserver间的通信" class="headerlink" title="fuzzer与forkserver间的通信"></a>fuzzer与forkserver间的通信</h1><p>我这里采用的思路是使用afl-gcc编译一个，然后把编译后的文件拉到ida里直接看，下方分析的是64位的程序</p>
+<h2 id="一些重要的值"><a href="#一些重要的值" class="headerlink" title="一些重要的值"></a>一些重要的值</h2><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_fJGHGhbB2Q.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/AFL%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image_PjVORsVpLj.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>__afl_area_ptr<ul>
+<li>共享内存的起始地址</li>
+</ul>
+</li>
+<li>__afl_prev_loc<ul>
+<li>上一次执行，边的位置</li>
+</ul>
+</li>
+<li>__afl_fork_pid<ul>
+<li>forkserver fork出来的子进程的pid</li>
+</ul>
+</li>
+<li>__afl_temp<ul>
+<li>存放fuzzer与forkserver之间通信的临时数据</li>
+</ul>
+</li>
+<li>__afl_setup_failure<ul>
+<li>子进程超时或者执行失败这个值会被赋值为1，如果为0则是正常运行</li>
+</ul>
+</li>
+<li>__afl_global_area_ptr<ul>
+<li>存放共享内存的起始地址</li>
+</ul>
+</li>
+</ul>
+<h2 id="afl-maybe-log-unsigned-int-cur-loc"><a href="#afl-maybe-log-unsigned-int-cur-loc" class="headerlink" title="_afl_maybe_log(unsigned int cur_loc)"></a>_afl_maybe_log(unsigned int cur_loc)</h2><p>这里是完整的逆向完毕的代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// AFL instrumentation function - handles shared memory setup and coverage tracking</span><br><span class="hljs-type">void</span> __fastcall _afl_maybe_log(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> cur_loc)<br>&#123;<br>  __int64 v1; <span class="hljs-comment">// rcx</span><br>  __int64 v2; <span class="hljs-comment">// rdx</span><br>  __int64 v3; <span class="hljs-comment">// rcx</span><br>  <span class="hljs-type">char</span> *shm_id_str; <span class="hljs-comment">// rax</span><br>  <span class="hljs-type">int</span> v5; <span class="hljs-comment">// eax</span><br>  <span class="hljs-type">void</span> *area_ptr; <span class="hljs-comment">// rax</span><br>  <span class="hljs-type">int</span> edge_id; <span class="hljs-comment">// edi</span><br>  __int64 child_pid; <span class="hljs-comment">// rax</span><br>  __int64 v9; <span class="hljs-comment">// rax</span><br>  __int64 shm_id; <span class="hljs-comment">// [rsp-10h] [rbp-180h]</span><br>  __int64 shm_ptr; <span class="hljs-comment">// [rsp+18h] [rbp-158h]</span><br><br>  v2 = _afl_area_ptr;<br>  <span class="hljs-keyword">if</span> ( _afl_area_ptr )                          <span class="hljs-comment">// Check if AFL shared memory area is already initialized</span><br>  &#123;<br>__afl_store:<br>    v3 = _afl_prev_loc ^ v1;                    <span class="hljs-comment">// Calculate edge ID: prev_loc XOR cur_loc for coverage tracking</span><br>    _afl_prev_loc ^= v3;                        <span class="hljs-comment">// Update prev_loc for next basic block</span><br>    _afl_prev_loc = _afl_prev_loc &gt;&gt; <span class="hljs-number">1</span>;         <span class="hljs-comment">// Shift prev_loc right by 1 to distinguish A-&gt;B from B-&gt;A</span><br>    ++*(v2 + v3);                               <span class="hljs-comment">// Increment hit count for this edge in shared memory bitmap</span><br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br>  <span class="hljs-keyword">if</span> ( !_afl_setup_failure )                    <span class="hljs-comment">// If setup failed before, return early</span><br>  &#123;<br>    v2 = _afl_global_area_ptr;<br>    <span class="hljs-keyword">if</span> ( _afl_global_area_ptr )                 <span class="hljs-comment">// Check if another thread already initialized the shared memory</span><br>    &#123;<br>      _afl_area_ptr = _afl_global_area_ptr;     <span class="hljs-comment">// Reuse already initialized global area pointer</span><br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>      shm_ptr = v1;<br>      shm_id_str = getenv(<span class="hljs-string">&quot;__AFL_SHM_ID&quot;</span>);      <span class="hljs-comment">// Get shared memory ID from environment variable __AFL_SHM_ID</span><br>      <span class="hljs-keyword">if</span> ( !shm_id_str || (v5 = atoi(shm_id_str), area_ptr = shmat(v5, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>), area_ptr == <span class="hljs-number">-1LL</span>) )<span class="hljs-comment">// Attach to AFL shared memory using shmat()</span><br>      &#123;<br>        ++_afl_setup_failure;                   <span class="hljs-comment">// Mark setup as failed if shmat fails</span><br>        <span class="hljs-keyword">return</span>;<br>      &#125;<br>      _afl_area_ptr = area_ptr;<br>      _afl_global_area_ptr = area_ptr;<br>      shm_id = area_ptr;<br>      <span class="hljs-keyword">if</span> ( write(<span class="hljs-number">199</span>, &amp;_afl_temp, <span class="hljs-number">4u</span>) == <span class="hljs-number">4</span> )    <span class="hljs-comment">// AFL Fork Server: Write to pipe 199 to signal ready</span><br>      &#123;<br>        <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )<br>        &#123;<br>          edge_id = <span class="hljs-number">198</span>;                        <span class="hljs-comment">// AFL_FORKSRV_FD (198) - Fork server control pipe</span><br>          <span class="hljs-keyword">if</span> ( read(<span class="hljs-number">198</span>, &amp;_afl_temp, <span class="hljs-number">4u</span>) != <span class="hljs-number">4</span> )<br>            <span class="hljs-keyword">break</span>;                              <span class="hljs-comment">// Fork server loop: Read from pipe 198 to get fuzz command</span><br>          LODWORD(child_pid) = fork();          <span class="hljs-comment">// Fork a child process for each fuzzing iteration</span><br>          <span class="hljs-keyword">if</span> ( child_pid &lt; <span class="hljs-number">0</span> )<br>            <span class="hljs-keyword">break</span>;<br>          <span class="hljs-keyword">if</span> ( !child_pid )<br>            <span class="hljs-keyword">goto</span> __afl_fork_resume;             <span class="hljs-comment">// Child process continues to __afl_fork_resume</span><br>          _afl_fork_pid = child_pid;<br>          write(<span class="hljs-number">199</span>, &amp;_afl_fork_pid, <span class="hljs-number">4u</span>);       <span class="hljs-comment">// Parent: Send child PID to fuzzer via pipe 199</span><br>          edge_id = _afl_fork_pid;<br>          LODWORD(v9) = waitpid(_afl_fork_pid, &amp;_afl_temp, <span class="hljs-number">0</span>);<span class="hljs-comment">// Parent: Wait for child process to finish</span><br>          <span class="hljs-keyword">if</span> ( v9 &lt;= <span class="hljs-number">0</span> )<br>            <span class="hljs-keyword">break</span>;<br>          write(<span class="hljs-number">199</span>, &amp;_afl_temp, <span class="hljs-number">4u</span>);           <span class="hljs-comment">// Parent: Send child exit status to fuzzer via pipe 199</span><br>        &#125;<br>        _exit(edge_id);<br>      &#125;<br>__afl_fork_resume:<br>      close(<span class="hljs-number">198</span>);                               <span class="hljs-comment">// Child: Close fork server pipes (fd 198, 199)</span><br>      close(<span class="hljs-number">199</span>);<br>      v2 = shm_id;<br>      v1 = shm_ptr;<br>    &#125;<br>    <span class="hljs-keyword">goto</span> __afl_store;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<ul>
+<li>_afl_area_ptr如果不为空的话，说明此时共享内存已经被初始化<ul>
+<li>__afl_store的label，下方的逻辑经过优化，下方的trace_bits其实就是共享内存<ul>
+<li>edge_id &#x3D; _afl_prev_loc ^ [complie_time_random]</li>
+<li>trace_bits[edge_id]++</li>
+<li>_afl_prev_loc &#x3D; [complie_time_random] &gt;&gt; 1</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>_afl_area_ptr如果为空，这说明还没有初始化共享内存<ul>
+<li>如果_afl_setup_failure为0，也就是forkserver fork出来的子进程没有运行失败<ul>
+<li>v2 &#x3D; _afl_global_area_ptr;</li>
+<li>如果_afl_global_area_ptr不为空，说明共享内存已经初始化，所以下面需要给_afl_area_ptr赋值<ul>
+<li>_afl_area_ptr &#x3D; _afl_global_area_ptr;&#x20;</li>
+</ul>
+</li>
+<li>如果_afl_global_area_ptr为空<ul>
+<li>获取环境变量__AFL_SHM_ID的值，赋值给shm_id_str</li>
+<li>接着通过这个shm_id将共享内存attach到进程空间中，成功的话会将地址的返回值赋值给area_ptr<ul>
+<li>如果attach失败了<ul>
+<li>++_afl_setup_failure，然后return</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>接着_afl_area_ptr和_afl_global_area_ptr都被赋值为area_ptr，也就是上方的attach的共享内存的地址</li>
+<li>执行write(199, &amp;_afl_temp, 4u) &#x3D;&#x3D; 4，向fuzzer传递4字节信息，执行成功进入下方逻辑<ul>
+<li>进入while ( 1 )循环<ul>
+<li>读取来自父进程的消息，其实就是prev_timeout的值</li>
+<li>fork子进程，保存其child_pid</li>
+<li>如果child_pid &lt; 0说明fork失败，那么就break</li>
+<li>如果child_pid&#x3D;0，就goto __afl_fork_resume，这里其实对应的是子进程的逻辑</li>
+<li>进入到这一步说明是forkserver的逻辑，因为上方子进程已经goto __afl_fork_resume了。接着forkserver将子进程的child_pid传递给fuzzer，forkserver等待子进程执行完毕后，将执行完毕的信息存储在_afl_temp，后续通过管道发送给fuzzer，让fuzzer判断子进程是否执行成功，后续forkserver会一次持续的这个循环，不断的fork子进程执行，返回pid，判断状态</li>
+</ul>
+</li>
+<li>exit</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>这里是__afl_fork_resume的label<ul>
+<li>关闭管道，赋值v2 &#x3D; shm_id;v1 &#x3D; shm_ptr;</li>
+<li>goto __afl_store;</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="complie-time-random的由来"><a href="#complie-time-random的由来" class="headerlink" title="complie_time_random的由来"></a>complie_time_random的由来</h2><p>插桩代码中存在着一段逻辑，这里会将outf的内容插入到每一个基本块</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-built_in">fprintf</span>(outf, use_64bit ? trampoline_fmt_64 : trampoline_fmt_32,<br>        R(MAP_SIZE));<br></code></pre></td></tr></table></figure>
+
+
+<p>跟进trampoline_fmt_64，这里主要就是调用了__afl_maybe_log函数，然后存在这样一段汇编”movq $0x%08x, %%rcx\n”，其实这里就是上方的R(MAP_SIZE)，R是一个随机数的宏，定义是这样define R(x) (random() % (x))</p>
+<figure class="highlight plaintext"><figcaption><span>assembly</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs 6502">static const u8* trampoline_fmt_64 =<br><br>  &quot;\n&quot;<br>  &quot;/* --- AFL TRAMPOLINE (64-BIT) --- */\n&quot;<br>  &quot;\n&quot;<br>  &quot;.align 4\n&quot;<br>  &quot;\n&quot;<br>  &quot;leaq -(128+24)(%%rsp), %%rsp\n&quot;<br>  &quot;movq %%rdx,  0(%%rsp)\n&quot;<br>  &quot;movq %%rcx,  8(%%rsp)\n&quot;<br>  &quot;movq %%rax, 16(%%rsp)\n&quot;<br>  &quot;movq $0x%08x, %%rcx\n&quot;<br>  &quot;call __afl_maybe_log\n&quot;<br>  &quot;movq 16(%%rsp), %%rax\n&quot;<br>  &quot;movq  8(%%rsp), %%rcx\n&quot;<br>  &quot;movq  0(%%rsp), %%rdx\n&quot;<br>  &quot;leaq (128+24)(%%rsp), %%rsp\n&quot;<br>  &quot;\n&quot;<br>  &quot;/* --- END --- */\n&quot;<br>  &quot;\n&quot;;<br></code></pre></td></tr></table></figure>
+
+
+<h1 id="ref"><a href="#ref" class="headerlink" title="ref"></a>ref</h1><p><a target="_blank" rel="noopener" href="https://eternalsakura13.com/2020/08/23/afl/" title="https://eternalsakura13.com/2020/08/23/afl/">https://eternalsakura13.com/2020/08/23/afl/</a></p>
+<p><a target="_blank" rel="noopener" href="https://dwfault.github.io/2019/12/20/afl-fuzz%E6%9A%B4%E5%8A%9B%E6%95%88%E7%8E%87%E6%B5%81%E5%AE%9E%E8%B7%B5/" title="https://dwfault.github.io/2019/12/20/afl-fuzz%E6%9A%B4%E5%8A%9B%E6%95%88%E7%8E%87%E6%B5%81%E5%AE%9E%E8%B7%B5/">https://dwfault.github.io/2019/12/20/afl-fuzz%E6%9A%B4%E5%8A%9B%E6%95%88%E7%8E%87%E6%B5%81%E5%AE%9E%E8%B7%B5/</a></p>
+<p><a target="_blank" rel="noopener" href="http://rk700.github.io/2017/12/28/afl-internals/" title="http://rk700.github.io/2017/12/28/afl-internals/">http://rk700.github.io/2017/12/28/afl-internals/</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Fuzz/" class="category-chain-item">Fuzz</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/AFL/" class="print-no-link">#AFL</a>
+      
+        <a href="/tags/Fuzz/" class="print-no-link">#Fuzz</a>
+      
+        <a href="/tags/llvm/" class="print-no-link">#llvm</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>AFL源码分析</div>
+      <div>http://example.com/2025/11/10/AFL源码分析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>flyyy</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年11月10日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/30/mimic_2025_winmt/" title="第八届“强网”拟态防御国际精英挑战赛 - WIN！致敬mt 复现">
+                        <span class="hidden-mobile">第八届“强网”拟态防御国际精英挑战赛 - WIN！致敬mt 复现</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      苏ICP备2024115526号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=32080302000199"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>苏公网安备32080302000199号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
