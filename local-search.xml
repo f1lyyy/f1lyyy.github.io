@@ -73,7 +73,7 @@
     
     <categories>
       
-      <category>match</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -100,14 +100,16 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Browser</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>v8，TheHole</tag>
+      <tag>v8</tag>
+      
+      <tag>TheHole</tag>
       
     </tags>
     
@@ -125,7 +127,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -152,7 +154,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -181,7 +183,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Browser</category>
       
     </categories>
     
@@ -210,7 +212,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -239,6 +241,12 @@
     <content type="html"><![CDATA[<h1 id="huggingface-course学习"><a href="#huggingface-course学习" class="headerlink" title="huggingface course学习"></a>huggingface course学习</h1><h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul><li><a href="#Unit-1-Introduction-to-Agents">Unit 1. Introduction to Agents</a><ul><li><a href="#What-is-an-Agent">What is an Agent?</a></li><li><a href="#What-are-LLMs">What are LLMs?</a><ul><li><a href="#What-is-a-Large-Language-Model">What is a Large Language Model?</a></li><li><a href="#Understanding-next-token-prediction">Understanding next token prediction</a></li><li><a href="#How-are-LLMs-trained">How are LLMs trained?</a></li></ul></li></ul></li></ul><h1 id="Unit-1-Introduction-to-Agents"><a href="#Unit-1-Introduction-to-Agents" class="headerlink" title="Unit 1. Introduction to Agents"></a>Unit 1. Introduction to Agents</h1><h2 id="What-is-an-Agent"><a href="#What-is-an-Agent" class="headerlink" title="What is an Agent?"></a>What is an Agent?</h2><p>现在有一个人叫flyyy的人，他是agent。想象一下她的女朋友对他说：“flyyy，我想要喝一杯咖啡。”</p><p>此时flyyy接收到了指令，因为flyyy可以理解人话（自然语言），所以可以很快的做出相应，把咖啡递给他的女朋友。</p><p>在flyyy完成这个动作之前，他需要推理和规划，并且弄清楚自己需要做的步骤和使用到的工具</p><ul><li>去厨房</li><li>使用咖啡机</li><li>冲咖啡</li><li>把咖啡递给女朋友</li></ul><p>下面是<strong>流程图</strong>，首先flyyy接收到了指令</p><p><img src="/img/blog_img/HuggingFaceCourse/image_b5jDjrFuW5.png" alt="image.png"></p><p>接着flyyy 尝试理解，并且做出推理和计划</p><p><img src="/img/blog_img/HuggingFaceCourse/image_PkmgyPdpB-.png" alt="image.png"></p><p>接着是执行</p><p><img src="/img/blog_img/HuggingFaceCourse/image_6euY_lXqU9.png" alt="image.png"></p><p>最后女朋友拿到了咖啡</p><p><img src="/img/blog_img/HuggingFaceCourse/image_4hRNv8rThg.png" alt="image.png"></p><p>概括一下，用了原文，觉得写的很好</p><p>agent: an AI model capable of <strong>reasoning</strong>, <strong>planning</strong>, and <strong>interacting</strong> with its environment.</p><p>agent具有与其所处环境交互的能力</p><p><img src="/img/blog_img/HuggingFaceCourse/image_S3XfshJ28b.png" alt="image.png"></p><blockquote><p>An Agent is a <strong>system</strong> that leverages an AI model to <strong>interact</strong> with its environment in order to <strong>achieve a user-defined objective</strong>. It combines <strong>reasoning</strong>, <strong>planning</strong>, and <strong>the execution of actions</strong> (often via external tools) to fulfill tasks.</p></blockquote><p>我们可以将agnet看作两个部分</p><p>1.The Brain (AI Model)</p><p>AI模型负责推理和规划，并且根据实际的情况来决定采取什么样的措施</p><p>2.The Body（Capabilities and Tools）</p><p>这部分代表了agent所具备的能力，也就是他能做什么</p><p>agent可以做的事情（action）的范围，取决于改agent配备了什么样的工具。比如说，人没有翅膀，所以人不可以飞，但是人可以“唱”、“跳”、“rap”和“打篮球”</p><p>不同的智能体具备的能力不一样，所以下面有一个智能体的能力分级</p><table><thead><tr><th>智能体等级</th><th>描述</th><th>常见称谓</th><th>示例模式</th></tr></thead><tbody><tr><td>☆☆☆</td><td>智能体输出不影响程序流程</td><td>简单处理器</td><td>`processllmoutput(llmresponse)`</td></tr><tr><td>★☆☆</td><td>智能体输出决定基本控制流</td><td>路由</td><td>`if llmdecision(): patha() else: pathb()`</td></tr><tr><td>★★☆</td><td>智能体输出决定函数调用</td><td>函数调用者</td><td>`runfunction(llmchosentool, llmchosenargs)`</td></tr><tr><td>★★★</td><td>智能体输出控制迭代及程序延续</td><td>多步智能体</td><td>`while llmshouldcontinue(): executenextstep()`</td></tr><tr><td>★★★</td><td>一个智能体流程可启动另一个智能体流程</td><td>多智能体系统</td><td>`if llmtrigger(): executeagent()`</td></tr></tbody></table><p>不同的模型可以做的事情不一样。比如说LLM（Large Language Model），会将文本作为输入，同样的文本作为输出；VLM，会讲图片作为输出……</p><blockquote><p>An Agent can perform any task we implement via<strong>Tools</strong> to complete <strong>Actions</strong>.</p></blockquote><p>例如，如果我编写一个Agent作为我计算机上的个人助理（类似 Siri），当我让它 “给我的经理发一封邮件，请求推迟今天的会议” 时，我可以给它一些发送邮件的代码。这将成为代理在需要发送邮件时可以使用的新工具。我们可以用 Python 来编写这个工具：</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">send_message_to</span>(<span class="hljs-params">recipient, message</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;Useful to send an e-mail message to a recipient&quot;&quot;&quot;</span><br>    ...<br></code></pre></td></tr></table></figure><p>对于LLM来说，会产生这样的调用</p><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-title function_">send_message_to</span>(<span class="hljs-string">&quot;Manager&quot;</span>, <span class="hljs-string">&quot;Can we postpone today&#x27;s meeting?&quot;</span>)<br></code></pre></td></tr></table></figure><p>To summarize, an Agent is a system that uses an AI Model (typically an LLM) as its core reasoning engine, to:</p><ul><li><strong>Understand natural language:</strong> Interpret and respond to human instructions in a meaningful way.</li><li><strong>Reason and plan:</strong> Analyze information, make decisions, and devise strategies to solve problems.</li><li><strong>Interact with its environment:</strong> Gather information, take actions, and observe the results of those actions.</li></ul><h2 id="What-are-LLMs"><a href="#What-are-LLMs" class="headerlink" title="What are LLMs?"></a>What are LLMs?</h2><h3 id="What-is-a-Large-Language-Model"><a href="#What-is-a-Large-Language-Model" class="headerlink" title="What is a Large Language Model?"></a>What is a Large Language Model?</h3><p>大型语言模型（LLM）是一种擅长理解和生成人类语言的人工智能模型。它们通过海量文本数据进行训练，从而学习语言中的模式、结构，甚至是细微差别。这类模型通常包含数以百万计的参数。</p><p>下面是当今绝大部分<strong>Transformer</strong>的架构，源自18年google的论文《attention is all your need》</p><p><img src="/img/blog_img/HuggingFaceCourse/title.png" alt="image.png"></p><p>下面是三种transformers</p><p>1. 编码器（Encoders）</p><p>基于编码器的 Transformer 将文本（或其他数据）作为输入，并输出该文本的稠密表示（或嵌入）。</p><ul><li><strong>示例</strong>：谷歌的 BERT</li><li><strong>应用场景</strong>：文本分类、语义搜索、命名实体识别</li><li><strong>典型规模</strong>：数百万参数</li></ul><p>2.解码器（Decoders）</p><p>基于解码器的 Transformer 专注于生成新标记以完成序列，每次生成一个标记。</p><ul><li><strong>示例</strong>：Meta 的 Llama</li><li><strong>应用场景</strong>：文本生成、聊天机器人、代码生成</li><li><strong>典型规模</strong>：数十亿参数（此处采用美国计数法，即109）</li></ul><p>3.序列到序列模型（Seq2Seq，Encoder–Decoder）</p><p>序列到序列 Transformer 结合了编码器和解码器。编码器首先将输入序列处理为上下文表示，然后解码器生成输出序列。</p><ul><li><strong>示例</strong>：T5、BART</li><li><strong>应用场景</strong>：机器翻译、文本摘要、句子改写</li><li><strong>典型规模</strong>：数百万参数</li></ul><p>下面就是一些以decoder为基础的模型</p><table><thead><tr><th><strong>Model</strong>​</th><th><strong>Provider</strong>​</th></tr></thead><tbody><tr><td><strong>Deepseek-R1</strong>​</td><td>DeepSeek</td></tr><tr><td><strong>GPT4</strong>​</td><td>OpenAI</td></tr><tr><td><strong>Llama 3</strong>​</td><td>Meta (Facebook AI Research)</td></tr><tr><td><strong>SmolLM2</strong>​</td><td>Hugging Face</td></tr><tr><td><strong>Gemma</strong>​</td><td>Google</td></tr><tr><td><strong>Mistral</strong>​</td><td>Mistral</td></tr></tbody></table><p>大型语言模型（LLM）的基本原理简单却高效：其目标是在给定先前标记序列的情况下，预测下一个标记。“标记”（token）是大型语言模型处理信息的基本单元。你可以将 “标记” 理解为类似 “单词” 的概念，但出于效率考量，大型语言模型并不使用完整的单词。</p><p>例如，英语中估计有 60 万个单词，而一个大型语言模型可能仅包含约 3.2 万个标记（如 Llama 2 即是如此）。标记化处理通常基于可组合的子词单元。</p><p>举例来说，“interest” 和 “ing” 这两个token可以组合成 “interesting”，或者通过附加 “ed” 形成 “interested”。</p><p>每个大型语言模型（LLM）都有一些特定于模型的特殊标记。模型使用这些标记来开启和关闭其生成内容的结构化组件，例如指示序列、消息或响应的开始或结束。此外，我们传递给模型的输入提示也会通过特殊标记进行结构化处理，其中最重要的是序列结束标记（EOS）。</p><p>不同模型提供商的特殊标记形式差异很大。</p><p>下表展示了特殊标记的多样性。</p><table><thead><tr><th><strong>Model</strong>​</th><th><strong>Provider</strong>​</th><th><strong>EOS Token</strong>​</th><th><strong>Functionality</strong>​</th></tr></thead><tbody><tr><td><strong>GPT4</strong>​</td><td>OpenAI</td><td>`&lt;|endoftext|&gt;`</td><td>End of message text</td></tr><tr><td><strong>Llama 3</strong>​</td><td>Meta (Facebook AI Research)</td><td>`&lt;|eot_id|&gt;`</td><td>End of sequence</td></tr><tr><td><strong>Deepseek-R1</strong>​</td><td>DeepSeek</td><td>`&lt;|end_of_sentence|&gt;`</td><td>End of message text</td></tr><tr><td><strong>SmolLM2</strong>​</td><td>Hugging Face</td><td>`&lt;|im_end|&gt;`</td><td>End of instruction or message</td></tr><tr><td><strong>Gemma</strong>​</td><td>Google</td><td>`&lt;end_of_turn&gt;`</td><td>End of conversation turn</td></tr></tbody></table><h3 id="Understanding-next-token-prediction"><a href="#Understanding-next-token-prediction" class="headerlink" title="Understanding next token prediction"></a>Understanding next token prediction</h3><p>这里描述的LLM如何预测下一个token的策略。其实就是一个终止条件为遇到EOS的循环，每一次的输入会对应一个输出，输出会作为下一次预测的输入，依次重复，直到遇到EOS</p><p>换句话说，大型语言模型（LLM）会一直解码文本，直到遇到序列结束标记（EOS）。但在单个解码循环中会发生什么呢？</p><p>尽管对于学习智能体（Agent）的用途而言，完整的过程可能相当技术化，但以下是一个简要概述：</p><ul><li>一旦输入文本被<strong>tokenized</strong>，模型会计算该序列的表示，这种表示捕获了输入序列中每个标记的含义和位置信息。 &#x20;</li><li>这种表示会被输入到模型中，模型随后输出分数，对其词汇表中每个标记作为序列中下一个标记的可能性进行排序。</li></ul><p>基于这些分数，最简单的方法就是选择分数最高的（出现可能性最大的）</p><p>但还有更高级的解码策略。例如，波束搜索（beam search）会探索多个候选序列，以找到总得分最高的序列 —— 即使某些单个标记的得分较低。</p><p>第二个方法是看一个语句的总体，比如说我这里采取以下的约束</p><p><img src="/img/blog_img/HuggingFaceCourse/image_eC4A-wsBCQ.png" alt="image.png"></p><p>一共是五个步骤，每一次输入都会有对应的四种可能性，然后每一种可能性会产生三个可能的token，依此这样，最后将所有的到的结果进行排序，选择可能性最大的</p><p>其实上面说了一个总体的处理方法，但是需要设想一种情况</p><p>比如说我有一个输入，The captial of China is ？？？显然想要推测出后面的token，我们需要重点关注captial和China，而不是The of 和 is。用户输入内容其实就是prompt，因此精心设计的prompt会让模型跟容易地输出我们想要的内容</p><h3 id="How-are-LLMs-trained"><a href="#How-are-LLMs-trained" class="headerlink" title="How are LLMs trained?"></a>How are LLMs trained?</h3><p>大型语言模型（LLMs）通过海量文本数据集进行训练，在训练过程中，它们基于自监督（self-supervised）学习或掩码语言（masked language ）建模目标，学习预测序列中的下一个词。</p><p>通过这种无监督学习（unsupervised learning），模型能够掌握语言结构和文本中的潜在模式，从而具备对未见过的数据进行泛化的能力。</p><p>在完成初始预训练后，大型语言模型可以通过有监督学习目标进行微调（fine-tuned），以执行特定任务。例如，部分模型会针对对话结构或工具使用场景进行训练，而另一些模型则专注于分类任务或代码生成。</p>]]></content>
     
     
+    <categories>
+      
+      <category>AI</category>
+      
+    </categories>
+    
     
     <tags>
       
@@ -264,7 +272,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -291,6 +299,12 @@
     <content type="html"><![CDATA[<h1 id="Mac-下编译-v8"><a href="#Mac-下编译-v8" class="headerlink" title="Mac 下编译 v8"></a>Mac 下编译 v8</h1><blockquote><p>记录下Mac下编译v8的过程，如何拉去v8源码就不再说明了</p></blockquote><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> v8<br>gn gen out/gn --ide=<span class="hljs-string">&quot;xcode&quot;</span><br>open ./out/gn/all.xcodeproj<br></code></pre></td></tr></table></figure><p>接着进入Xcode的界面 Product→Scheme→d8，接着等待检索目录结束</p><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/Mac_complie_v8_engine/image_PX-QpUFFsx.png"></p><p>接着Product→Build，或者command B，接着就会开始编译</p><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/Mac_complie_v8_engine/image_2rvAdqtv_G.png"></p><p>编译完毕之后，会出现一下界面</p><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/Mac_complie_v8_engine/image_pAEDh7Acsy.png"></p><p>先不着急运行，设置下启动参数</p><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/Mac_complie_v8_engine/image_9z-rqupRs6.png"></p><p>我一般设置为下图，然后效果就相当于.&#x2F;d8–allow-natives-syntax exp.js</p><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/Mac_complie_v8_engine/image_GZAYlVu5Kk.png"></p><p>记得设置下lldb的init脚本路径，里面设置内容设置下<code>command script import /Users/flyyy/Desktop/workspace/browser/v8/demo/v8/tools/lldb_commands.py</code> ，设置成自己的lldb_commands.py的路径，就可以正常使用job这种指令了</p><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/Mac_complie_v8_engine/image_scjhoMqt5k.png"></p><p>最后点击run，就是这个效果</p><p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/Mac_complie_v8_engine/image_6iZdn7SYmy.png"></p>]]></content>
     
     
+    <categories>
+      
+      <category>Trick</category>
+      
+    </categories>
+    
     
     <tags>
       
@@ -316,7 +330,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Browser</category>
       
     </categories>
     
@@ -347,7 +361,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Browser</category>
       
     </categories>
     
@@ -378,7 +392,7 @@
     
     <categories>
       
-      <category>match</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -405,7 +419,7 @@
     
     <categories>
       
-      <category>v8</category>
+      <category>Browser</category>
       
     </categories>
     
@@ -436,7 +450,7 @@
     
     <categories>
       
-      <category>match</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -467,7 +481,7 @@
     
     <categories>
       
-      <category>kernel</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -498,7 +512,7 @@
     
     <categories>
       
-      <category>kernel</category>
+      <category>Writeup</category>
       
     </categories>
     
@@ -525,7 +539,7 @@
     
     <categories>
       
-      <category>kernel</category>
+      <category>Writeup</category>
       
     </categories>
     
