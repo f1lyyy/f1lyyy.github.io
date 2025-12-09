@@ -24,6 +24,12 @@
       
       <tag>heap spray</tag>
       
+      <tag>gc</tag>
+      
+      <tag>browser</tag>
+      
+      <tag>Weakmap</tag>
+      
       <tag>render</tag>
       
       <tag>hash table</tag>
